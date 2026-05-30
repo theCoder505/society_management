@@ -68,6 +68,13 @@ Route::middleware(['auth'])->prefix('/admin')->group(function () {
 
 
 
+// Route::middleware(['auth.owner'])->prefix('/owner')->group(function () {
+
+// });
+
+// Route::middleware(['auth.tenant'])->prefix('/tenant')->group(function () {
+
+// });
 
 
 
