@@ -1,10 +1,10 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import FlashMessage from '../FlashMessage';
 import { Button, Input } from '@headlessui/react';
+import { Head } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import FlashMessage from '../FlashMessage';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,10 +13,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-
 export default function Dashboard() {
     const [search, setSearch] = useState('');
-
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -35,11 +33,11 @@ export default function Dashboard() {
                     </Button>
                 </div>
 
-                <div className="relative max-w-sm border p-1 rounded-sm flex items-center text-sm">
+                <div className="relative flex max-w-sm items-center rounded-sm border p-1 text-sm">
                     <Search className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                     <Input
                         placeholder="Search by name, location, UID…"
-                        className="pl-6 w-full outline-none"
+                        className="w-full pl-6 outline-none"
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);

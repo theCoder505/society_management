@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
 import Swal from 'sweetalert2';
 
 interface FlashProps {

@@ -2,21 +2,14 @@ import AppearanceTabs from '@/components/appearance-tabs';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useRef, useState } from 'react';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -56,12 +49,16 @@ function ProfileForm({ mustVerifyEmail, status, auth }: { mustVerifyEmail: boole
 
     const sendOtp = () => {
         setOtpSending(true);
-        router.post(route('profile.send-otp'), { type: 'email' }, {
-            onSuccess: () => setShowOtpModal(true),
-            onFinish: () => setOtpSending(false),
-            preserveScroll: true,
-            preserveState: true,
-        });
+        router.post(
+            route('profile.send-otp'),
+            { type: 'email' },
+            {
+                onSuccess: () => setShowOtpModal(true),
+                onFinish: () => setOtpSending(false),
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
     };
 
     return (
@@ -116,9 +113,7 @@ function ProfileForm({ mustVerifyEmail, status, auth }: { mustVerifyEmail: boole
                     </div>
                 )}
                 <div className="flex items-center gap-4">
-                    <Button disabled={processing || otpSending}>
-                        {otpSending ? 'Sending OTP...' : 'Save Profile'}
-                    </Button>
+                    <Button disabled={processing || otpSending}>{otpSending ? 'Sending OTP...' : 'Save Profile'}</Button>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"
@@ -136,8 +131,8 @@ function ProfileForm({ mustVerifyEmail, status, auth }: { mustVerifyEmail: boole
                     <DialogHeader>
                         <DialogTitle>Verify Email Change</DialogTitle>
                         <DialogDescription>
-                            We've sent a 6-digit verification code to <strong>{auth.user.email}</strong>. Please enter it below to confirm your
-                            email change.
+                            We've sent a 6-digit verification code to <strong>{auth.user.email}</strong>. Please enter it below to confirm your email
+                            change.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -202,12 +197,16 @@ function PasswordForm() {
         }
 
         setOtpSending(true);
-        router.post(route('profile.send-otp'), { type: 'password' }, {
-            onSuccess: () => setShowOtpModal(true),
-            onFinish: () => setOtpSending(false),
-            preserveScroll: true,
-            preserveState: true,
-        });
+        router.post(
+            route('profile.send-otp'),
+            { type: 'password' },
+            {
+                onSuccess: () => setShowOtpModal(true),
+                onFinish: () => setOtpSending(false),
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
     };
 
     const updatePassword: FormEventHandler = (e) => {
@@ -283,9 +282,7 @@ function PasswordForm() {
                     <InputError message={errors.password_confirmation} />
                 </div>
                 <div className="flex items-center gap-4">
-                    <Button disabled={processing || otpSending}>
-                        {otpSending ? 'Sending OTP...' : 'Save password'}
-                    </Button>
+                    <Button disabled={processing || otpSending}>{otpSending ? 'Sending OTP...' : 'Save password'}</Button>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"
@@ -341,16 +338,16 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Settings" />
-                <div className="lg:grid grid-cols-1 gap-6 space-y-10 lg:grid-cols-2 p-6 lg:p-8">
-                    <ProfileForm mustVerifyEmail={mustVerifyEmail} status={status} auth={auth} />
-                    <PasswordForm />
-                    <div className="col-span-2 flex items-center justify-center space-y-6">
-                        <div className="grid gap-2">
-                            <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
-                            <AppearanceTabs />
-                        </div>
+            <div className="grid-cols-1 gap-6 space-y-10 p-6 lg:grid lg:grid-cols-2 lg:p-8">
+                <ProfileForm mustVerifyEmail={mustVerifyEmail} status={status} auth={auth} />
+                <PasswordForm />
+                <div className="col-span-2 flex items-center justify-center space-y-6">
+                    <div className="grid gap-2">
+                        <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
+                        <AppearanceTabs />
                     </div>
                 </div>
+            </div>
         </AppLayout>
     );
 }

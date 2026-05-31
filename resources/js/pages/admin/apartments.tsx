@@ -1,34 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogClose,
-} from '@/components/ui/dialog';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -39,24 +13,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-    ChevronUp,
-    ChevronDown,
-    ChevronsUpDown,
-    Plus,
-    Pencil,
-    Trash2,
-    Search,
-    ChevronLeft,
-    ChevronRight,
-    X,
-    Upload,
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, Pencil, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import FlashMessage from '../FlashMessage';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Apartments', href: '/apartments' },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Apartments', href: '/apartments' }];
 
 interface Apartment {
     id: number;
@@ -324,10 +290,20 @@ export default function Apartments({ apartments }: Props) {
     };
 
     const gasBadgeColor = (v: string) =>
-        ({ lpg: 'bg-orange-100 text-orange-700', card: 'bg-blue-100 text-blue-700', manual: 'bg-gray-100 text-gray-700', other: 'bg-purple-100 text-purple-700' }[v] ?? '');
+        ({
+            lpg: 'bg-orange-100 text-orange-700',
+            card: 'bg-blue-100 text-blue-700',
+            manual: 'bg-gray-100 text-gray-700',
+            other: 'bg-purple-100 text-purple-700',
+        })[v] ?? '';
 
     const waterBadgeColor = (v: string) =>
-        ({ wasa: 'bg-teal-100 text-teal-700', submersible_pump: 'bg-cyan-100 text-cyan-700', normal_pump: 'bg-sky-100 text-sky-700', other: 'bg-gray-100 text-gray-700' }[v] ?? '');
+        ({
+            wasa: 'bg-teal-100 text-teal-700',
+            submersible_pump: 'bg-cyan-100 text-cyan-700',
+            normal_pump: 'bg-sky-100 text-sky-700',
+            other: 'bg-gray-100 text-gray-700',
+        })[v] ?? '';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -340,11 +316,13 @@ export default function Apartments({ apartments }: Props) {
                         <h1 className="text-2xl font-bold tracking-tight">Apartments</h1>
                         <p className="text-muted-foreground text-sm">Manage all apartment buildings</p>
                     </div>
-                    <Button onClick={() => {
-                        createForm.reset();
-                        createForm.setData('appartment_uid', generateUID());
-                        setShowCreateModal(true);
-                    }}>
+                    <Button
+                        onClick={() => {
+                            createForm.reset();
+                            createForm.setData('appartment_uid', generateUID());
+                            setShowCreateModal(true);
+                        }}
+                    >
                         <Plus className="mr-2 h-4 w-4" />
                         New Apartment
                     </Button>
@@ -376,10 +354,10 @@ export default function Apartments({ apartments }: Props) {
                                 <TableHead className="cursor-pointer select-none" onClick={() => handleSort('appartment_location')}>
                                     Location <SortIcon field="appartment_location" />
                                 </TableHead>
-                                <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('total_flats')}>
+                                <TableHead className="cursor-pointer text-right select-none" onClick={() => handleSort('total_flats')}>
                                     Flats <SortIcon field="total_flats" />
                                 </TableHead>
-                                <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('total_units')}>
+                                <TableHead className="cursor-pointer text-right select-none" onClick={() => handleSort('total_units')}>
                                     Units <SortIcon field="total_units" />
                                 </TableHead>
                                 <TableHead>Gas</TableHead>
@@ -421,7 +399,12 @@ export default function Apartments({ apartments }: Props) {
                                                 <Button variant="ghost" size="icon" onClick={() => handleEditOpen(apt)}>
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteOpen(apt)}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-destructive hover:text-destructive"
+                                                    onClick={() => handleDeleteOpen(apt)}
+                                                >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -439,12 +422,7 @@ export default function Apartments({ apartments }: Props) {
                         {Math.min(currentPage * ITEMS_PER_PAGE, sorted.length)} of {sorted.length} results
                     </span>
                     <div className="flex items-center gap-1">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage((p) => p - 1)}
-                        >
+                        <Button variant="outline" size="icon" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -456,7 +434,9 @@ export default function Apartments({ apartments }: Props) {
                             }, [])
                             .map((p, i) =>
                                 p === '...' ? (
-                                    <span key={`ellipsis-${i}`} className="px-2">…</span>
+                                    <span key={`ellipsis-${i}`} className="px-2">
+                                        …
+                                    </span>
                                 ) : (
                                     <Button
                                         key={p}
@@ -468,12 +448,7 @@ export default function Apartments({ apartments }: Props) {
                                     </Button>
                                 ),
                             )}
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage((p) => p + 1)}
-                        >
+                        <Button variant="outline" size="icon" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
@@ -502,14 +477,14 @@ export default function Apartments({ apartments }: Props) {
                 onSubmit={handleUpdate}
                 submitLabel="Save Changes"
                 isCreate={false}
-                existingImages={selectedApartment?.apartment_images?.split(',').filter(img => img && img.trim() !== '') || []}
+                existingImages={selectedApartment?.apartment_images?.split(',').filter((img) => img && img.trim() !== '') || []}
             />
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent className='bg-red-50 border border-red-500'>
+                <AlertDialogContent className="border border-red-500 bg-red-50">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className='text-red-700'>Delete Apartment</AlertDialogTitle>
-                        <AlertDialogDescription className='text-red-400'>
+                        <AlertDialogTitle className="text-red-700">Delete Apartment</AlertDialogTitle>
+                        <AlertDialogDescription className="text-red-400">
                             Are you sure you want to delete <strong>{selectedApartment?.appartment_name}</strong>? This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -551,7 +526,7 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
     useEffect(() => {
         if (!open) {
             // Cleanup previews when modal closes
-            imagePreviews.forEach(preview => {
+            imagePreviews.forEach((preview) => {
                 URL.revokeObjectURL(preview.preview);
             });
             setImagePreviews([]);
@@ -565,15 +540,15 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
 
-        const newPreviews = files.map(file => ({
+        const newPreviews = files.map((file) => ({
             file,
-            preview: URL.createObjectURL(file)
+            preview: URL.createObjectURL(file),
         }));
 
-        setImagePreviews(prev => [...prev, ...newPreviews]);
-        
+        setImagePreviews((prev) => [...prev, ...newPreviews]);
+
         // Update form data with all files
-        const allFiles = [...imagePreviews.map(p => p.file), ...files];
+        const allFiles = [...imagePreviews.map((p) => p.file), ...files];
         setData('apartment_images', allFiles);
     };
 
@@ -582,9 +557,9 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
         URL.revokeObjectURL(newPreviews[index].preview);
         newPreviews.splice(index, 1);
         setImagePreviews(newPreviews);
-        
+
         // Update form data
-        const remainingFiles = newPreviews.map(p => p.file);
+        const remainingFiles = newPreviews.map((p) => p.file);
         setData('apartment_images', remainingFiles);
     };
 
@@ -592,7 +567,7 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
         const updated = [...existingImageUrls];
         updated.splice(index, 1);
         setExistingImageUrls(updated);
-        
+
         // Update existing_images string in form data
         setData('existing_images', updated.join(','));
     };
@@ -614,12 +589,7 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
         </div>
     );
 
-    const selectField = (
-        name: keyof any,
-        label: string,
-        options: { value: string; label: string }[],
-        required = false,
-    ) => (
+    const selectField = (name: keyof any, label: string, options: { value: string; label: string }[], required = false) => (
         <div className="grid gap-1.5">
             <Label>
                 {label} {required && <span className="text-destructive">*</span>}
@@ -630,7 +600,9 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
                 </SelectTrigger>
                 <SelectContent>
                     {options.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                        <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                        </SelectItem>
                     ))}
                 </SelectContent>
             </Select>
@@ -639,7 +611,12 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
     );
 
     return (
-        <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+        <Dialog
+            open={open}
+            onOpenChange={(v) => {
+                if (!v) onClose();
+            }}
+        >
             <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-y-auto lg:max-w-5xl">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
@@ -648,9 +625,7 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
                 <div className="grid grid-cols-1 gap-4 py-2 sm:grid-cols-2">
                     {field('appartment_uid', 'Apartment UID', 'text', true, !isCreate)}
                     {field('appartment_name', 'Apartment Name', 'text', true)}
-                    <div className="sm:col-span-2">
-                        {field('appartment_location', 'Location', 'text', true)}
-                    </div>
+                    <div className="sm:col-span-2">{field('appartment_location', 'Location', 'text', true)}</div>
 
                     {field('total_flats', 'Total Flats', 'number', true)}
                     {field('total_units', 'Total Units', 'number', true)}
@@ -662,50 +637,68 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
                     {field('doors_open_time', 'Doors Open Time', 'time', true)}
                     {field('doors_close_time', 'Doors Close Time', 'time', true)}
 
-                    {selectField('gas_systen', 'Gas System', [
-                        { value: 'lpg', label: 'LPG' },
-                        { value: 'card', label: 'Card' },
-                        { value: 'manual', label: 'Manual' },
-                        { value: 'other', label: 'Other' },
-                    ], true)}
-                    {selectField('water_systen', 'Water System', [
-                        { value: 'wasa', label: 'WASA' },
-                        { value: 'submersible_pump', label: 'Submersible Pump' },
-                        { value: 'normal_pump', label: 'Normal Pump' },
-                        { value: 'other', label: 'Other' },
-                    ], true)}
+                    {selectField(
+                        'gas_systen',
+                        'Gas System',
+                        [
+                            { value: 'lpg', label: 'LPG' },
+                            { value: 'card', label: 'Card' },
+                            { value: 'manual', label: 'Manual' },
+                            { value: 'other', label: 'Other' },
+                        ],
+                        true,
+                    )}
+                    {selectField(
+                        'water_systen',
+                        'Water System',
+                        [
+                            { value: 'wasa', label: 'WASA' },
+                            { value: 'submersible_pump', label: 'Submersible Pump' },
+                            { value: 'normal_pump', label: 'Normal Pump' },
+                            { value: 'other', label: 'Other' },
+                        ],
+                        true,
+                    )}
 
                     {field('water_in_time', 'Water In Time', 'time')}
                     {field('water_out_time', 'Water Out Time', 'time')}
 
-                    {selectField('garage_location', 'Garage Location', [
-                        { value: 'no_garage', label: 'No Garage' },
-                        { value: 'ground_floor', label: 'Ground Floor' },
-                        { value: 'underground', label: 'Underground' },
-                    ], true)}
+                    {selectField(
+                        'garage_location',
+                        'Garage Location',
+                        [
+                            { value: 'no_garage', label: 'No Garage' },
+                            { value: 'ground_floor', label: 'Ground Floor' },
+                            { value: 'underground', label: 'Underground' },
+                        ],
+                        true,
+                    )}
                     {field('garage_size', 'Garage Size')}
                     {field('garage_allocation', 'Garage Allocation')}
                     {field('garage_sections', 'Garage Sections (comma separated)')}
 
-                    {selectField('terrace_option', 'Terrace Access', [
-                        { value: 'open_for_all', label: 'Open for All' },
-                        { value: 'owners_only', label: 'Owners Only' },
-                    ], true)}
+                    {selectField(
+                        'terrace_option',
+                        'Terrace Access',
+                        [
+                            { value: 'open_for_all', label: 'Open for All' },
+                            { value: 'owners_only', label: 'Owners Only' },
+                        ],
+                        true,
+                    )}
 
                     {/* Image Upload Section */}
                     <div className="sm:col-span-2">
                         <div className="grid gap-1.5">
-                            <Label>
-                                Apartment Images {isCreate && <span className="text-destructive">*</span>}
-                            </Label>
+                            <Label>Apartment Images {isCreate && <span className="text-destructive">*</span>}</Label>
 
                             {/* Existing Images (Edit Mode) */}
                             {!isCreate && existingImageUrls.length > 0 && (
                                 <div className="mb-4">
-                                    <Label className="text-sm text-muted-foreground mb-2 block">Current Images</Label>
+                                    <Label className="text-muted-foreground mb-2 block text-sm">Current Images</Label>
                                     <div className="flex flex-wrap gap-3">
                                         {existingImageUrls.map((url, idx) => (
-                                            <div key={`existing-${idx}`} className="relative h-24 w-24 overflow-hidden rounded-md border group">
+                                            <div key={`existing-${idx}`} className="group relative h-24 w-24 overflow-hidden rounded-md border">
                                                 <img
                                                     src={url}
                                                     alt={`Existing ${idx + 1}`}
@@ -716,7 +709,7 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
                                                 />
                                                 <button
                                                     type="button"
-                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
                                                     onClick={() => removeExistingImage(idx)}
                                                 >
                                                     <X className="h-3 w-3" />
@@ -730,18 +723,14 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
                             {/* New Images Preview */}
                             {imagePreviews.length > 0 && (
                                 <div className="mb-4">
-                                    <Label className="text-sm text-muted-foreground mb-2 block">New Images</Label>
+                                    <Label className="text-muted-foreground mb-2 block text-sm">New Images</Label>
                                     <div className="flex flex-wrap gap-3">
                                         {imagePreviews.map((preview, idx) => (
-                                            <div key={`new-${idx}`} className="relative h-24 w-24 overflow-hidden rounded-md border group">
-                                                <img
-                                                    src={preview.preview}
-                                                    alt={`Preview ${idx + 1}`}
-                                                    className="h-full w-full object-cover"
-                                                />
+                                            <div key={`new-${idx}`} className="group relative h-24 w-24 overflow-hidden rounded-md border">
+                                                <img src={preview.preview} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
                                                 <button
                                                     type="button"
-                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
                                                     onClick={() => removeNewImage(idx)}
                                                 >
                                                     <X className="h-3 w-3" />
@@ -770,9 +759,7 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
                                 onChange={handleFileChange}
                             />
 
-                            {errors.apartment_images && (
-                                <p className="text-destructive text-xs">{errors.apartment_images}</p>
-                            )}
+                            {errors.apartment_images && <p className="text-destructive text-xs">{errors.apartment_images}</p>}
                         </div>
                     </div>
 
@@ -781,7 +768,7 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
                             <Label htmlFor="apartment_notes">Notes</Label>
                             <textarea
                                 id="apartment_notes"
-                                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                                 value={data.apartment_notes ?? ''}
                                 onChange={(e) => setData('apartment_notes', e.target.value)}
                             />
@@ -792,7 +779,9 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
 
                 <DialogFooter className="mt-2">
                     <DialogClose asChild>
-                        <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
+                        <Button variant="outline" type="button" onClick={onClose}>
+                            Cancel
+                        </Button>
                     </DialogClose>
                     <Button onClick={onSubmit} disabled={processing}>
                         {processing ? 'Saving…' : submitLabel}

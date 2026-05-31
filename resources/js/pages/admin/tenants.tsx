@@ -704,9 +704,7 @@ function TenantModal({
 
     const availableFlatsForApt = useMemo(() => {
         if (!selectedAptUID) return [];
-        return allFlats.filter(
-            (f) => f.appartment_uid === selectedAptUID && (!f.tenant_uid || f.tenant_uid === currentTenantUID),
-        );
+        return allFlats.filter((f) => f.appartment_uid === selectedAptUID && (!f.tenant_uid || f.tenant_uid === currentTenantUID));
     }, [allFlats, selectedAptUID, currentTenantUID]);
 
     const selectedFlatDetails = useMemo(
@@ -715,10 +713,7 @@ function TenantModal({
     );
 
     // ── CRITICAL FIX: use parseRentMap helper that handles both object and string formats ──
-    const rentMap = useMemo<Record<string, string>>(
-        () => parseRentMap(formData.current_rent_amount),
-        [formData.current_rent_amount],
-    );
+    const rentMap = useMemo<Record<string, string>>(() => parseRentMap(formData.current_rent_amount), [formData.current_rent_amount]);
 
     const updateRent = (flatID: string, amount: string) => {
         const next = { ...rentMap, [flatID]: amount };
@@ -755,7 +750,7 @@ function TenantModal({
             next.add(flatID);
             const flat = allFlats.find((f) => f.flatID === flatID);
             const nextRent = { ...rentMap };
-            
+
             // FIX: Always set the rent amount when adding a flat
             // If there's an existing rent amount for this flat, keep it
             // Otherwise, use the flat's default rent_price, or leave empty
@@ -766,7 +761,7 @@ function TenantModal({
                     nextRent[flatID] = '';
                 }
             }
-            
+
             setData('current_rent_amount', serialiseRentMap(nextRent));
         }
         setData('renting_flats', [...next].join(','));

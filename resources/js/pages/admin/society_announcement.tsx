@@ -96,12 +96,18 @@ const emptyForm = (): AnnouncementFormData => ({
 
 const personTypeLabel = (type: string) => {
     switch (type) {
-        case 'all': return 'Everyone';
-        case 'all_owners': return 'All Owners';
-        case 'all_tenants': return 'All Tenants';
-        case 'owner': return 'Specific Owner';
-        case 'tenant': return 'Specific Tenant';
-        default: return type;
+        case 'all':
+            return 'Everyone';
+        case 'all_owners':
+            return 'All Owners';
+        case 'all_tenants':
+            return 'All Tenants';
+        case 'owner':
+            return 'Specific Owner';
+        case 'tenant':
+            return 'Specific Tenant';
+        default:
+            return type;
     }
 };
 
@@ -164,9 +170,14 @@ export default function SocietyAnnouncement({ data, owners, tenants }: Props) {
     const paginated = sorted.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     const handleSort = (field: SortField) => {
-        if (sortField !== field) { setSortField(field); setSortDirection('asc'); }
-        else if (sortDirection === 'asc') setSortDirection('desc');
-        else { setSortField(null); setSortDirection(null); }
+        if (sortField !== field) {
+            setSortField(field);
+            setSortDirection('asc');
+        } else if (sortDirection === 'asc') setSortDirection('desc');
+        else {
+            setSortField(null);
+            setSortDirection(null);
+        }
         setCurrentPage(1);
     };
 
@@ -229,7 +240,12 @@ export default function SocietyAnnouncement({ data, owners, tenants }: Props) {
                         <h1 className="text-2xl font-bold tracking-tight">Society Announcements</h1>
                         <p className="text-muted-foreground text-sm">Broadcast notices to owners, tenants, or specific individuals</p>
                     </div>
-                    <Button onClick={() => { createForm.reset(); setShowCreateModal(true); }}>
+                    <Button
+                        onClick={() => {
+                            createForm.reset();
+                            setShowCreateModal(true);
+                        }}
+                    >
                         <Plus className="mr-2 h-4 w-4" />
                         New Announcement
                     </Button>
@@ -242,7 +258,10 @@ export default function SocietyAnnouncement({ data, owners, tenants }: Props) {
                         placeholder="Search by title, audience, UID…"
                         className="pl-9"
                         value={search}
-                        onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setCurrentPage(1);
+                        }}
                     />
                 </div>
 
@@ -290,7 +309,11 @@ export default function SocietyAnnouncement({ data, owners, tenants }: Props) {
                                             {ann.announcement_for_uid ?? <span className="text-muted-foreground italic">—</span>}
                                         </TableCell>
                                         <TableCell className="text-muted-foreground text-sm">
-                                            {new Date(ann.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            {new Date(ann.created_at).toLocaleDateString('en-GB', {
+                                                day: '2-digit',
+                                                month: 'short',
+                                                year: 'numeric',
+                                            })}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
@@ -301,7 +324,10 @@ export default function SocietyAnnouncement({ data, owners, tenants }: Props) {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="text-destructive hover:text-destructive"
-                                                    onClick={() => { setSelectedAnnouncement(ann); setShowDeleteDialog(true); }}
+                                                    onClick={() => {
+                                                        setSelectedAnnouncement(ann);
+                                                        setShowDeleteDialog(true);
+                                                    }}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -333,9 +359,16 @@ export default function SocietyAnnouncement({ data, owners, tenants }: Props) {
                             }, [])
                             .map((p, i) =>
                                 p === '...' ? (
-                                    <span key={`ellipsis-${i}`} className="px-2">…</span>
+                                    <span key={`ellipsis-${i}`} className="px-2">
+                                        …
+                                    </span>
                                 ) : (
-                                    <Button key={p} variant={currentPage === p ? 'default' : 'outline'} size="icon" onClick={() => setCurrentPage(p as number)}>
+                                    <Button
+                                        key={p}
+                                        variant={currentPage === p ? 'default' : 'outline'}
+                                        size="icon"
+                                        onClick={() => setCurrentPage(p as number)}
+                                    >
                                         {p}
                                     </Button>
                                 ),
@@ -350,7 +383,10 @@ export default function SocietyAnnouncement({ data, owners, tenants }: Props) {
             {/* Create Modal */}
             <AnnouncementModal
                 open={showCreateModal}
-                onClose={() => { setShowCreateModal(false); createForm.reset(); }}
+                onClose={() => {
+                    setShowCreateModal(false);
+                    createForm.reset();
+                }}
                 title="New Announcement"
                 formData={createForm.data}
                 setData={createForm.setData}
@@ -438,7 +474,12 @@ function AnnouncementModal({
     ];
 
     return (
-        <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+        <Dialog
+            open={open}
+            onOpenChange={(v) => {
+                if (!v) onClose();
+            }}
+        >
             <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -509,13 +550,9 @@ function AnnouncementModal({
                     {isSpecific && (
                         <div className="grid gap-1.5">
                             <Label>
-                                Select {formData.person_type === 'owner' ? 'Owner' : 'Tenant'}{' '}
-                                <span className="text-destructive">*</span>
+                                Select {formData.person_type === 'owner' ? 'Owner' : 'Tenant'} <span className="text-destructive">*</span>
                             </Label>
-                            <Select
-                                value={formData.announcement_for_uid}
-                                onValueChange={(v) => setData('announcement_for_uid', v)}
-                            >
+                            <Select value={formData.announcement_for_uid} onValueChange={(v) => setData('announcement_for_uid', v)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={`Choose a ${formData.person_type}…`} />
                                 </SelectTrigger>
@@ -535,9 +572,7 @@ function AnnouncementModal({
                                           ))}
                                 </SelectContent>
                             </Select>
-                            {errors.announcement_for_uid && (
-                                <p className="text-destructive text-xs">{errors.announcement_for_uid}</p>
-                            )}
+                            {errors.announcement_for_uid && <p className="text-destructive text-xs">{errors.announcement_for_uid}</p>}
                         </div>
                     )}
                 </div>

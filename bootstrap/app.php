@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
+        ]);
+        $middleware->redirectGuestsTo(fn() => route('portal.login'));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

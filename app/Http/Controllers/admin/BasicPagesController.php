@@ -6,6 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Appartment;
 use App\Models\AppSetting;
 use App\Models\Flat;
+use App\Models\FlatOwner;
+use App\Models\FlatOwnerCost;
+use App\Models\Tenant;
+use App\Models\TenantBill;
+use App\Models\SocietyCosts;
+use App\Models\SocietyDevelopment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
@@ -19,8 +25,44 @@ class BasicPagesController extends Controller
 
     public function dashboard()
     {
-        $data = [];
-        return Inertia::render('dashboard', compact('data'));
+        $totalApartments = Appartment::count();
+        $totalFlats = Flat::count();
+        $totalTenants = Tenant::count();
+        $totalOwners = FlatOwner::count();
+        
+        $totalPendingBills = TenantBill::where('status', 'pending')->count();
+        
+        $monthlyCollections = TenantBill::where('status', 'accepted')
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->sum('amount');
+            
+        $monthlyExpenditure = SocietyCosts::whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->sum('amount');
+            
+        $recentBills = TenantBill::latest()
+            ->take(5)
+            ->get()
+            ->map(function($bill) {
+                $tenant = Tenant::where('tenant_uid', $bill->tenant_uid)->first();
+                $bill->tenant_name = $tenant ? $tenant->name : 'Unknown';
+                return $bill;
+            });
+            
+        $recentSocietyCosts = SocietyCosts::latest()->take(5)->get();
+
+        $stats = [
+            'total_apartments' => $totalApartments,
+            'total_flats' => $totalFlats,
+            'total_tenants' => $totalTenants,
+            'total_owners' => $totalOwners,
+            'total_pending_bills' => $totalPendingBills,
+            'monthly_collections' => (float)$monthlyCollections,
+            'monthly_expenditure' => (float)$monthlyExpenditure,
+        ];
+
+        return Inertia::render('dashboard', compact('stats', 'recentBills', 'recentSocietyCosts'));
     }
 
 
@@ -449,23 +491,168 @@ class BasicPagesController extends Controller
 
 
 
-    public function flat_owner_costs(){
-        $data = [];
-        return Inertia::render('admin/flat_owner_costs', compact('data'));
+    public function flat_owner_costs()
+    {
+        $costs = FlatOwnerCost::latest()->get();
+        $owners = FlatOwner::all(['owner_uid', 'name']);
+        $developments = SocietyDevelopment::all(['development_uid', 'title']);
+        return Inertia::render('admin/flat_owner_costs', compact('costs', 'owners', 'developments'));
     }
 
-
-
-    public function tenant_bills(){
-        $data = [];
-        return Inertia::render('admin/tenant_bills', compact('data'));
+    public function create_flat_owner_cost(Request $request)
+    {
+        $validated = $request->validate([
+            'owner_uid' => 'required|string|exists:flat_owners,owner_uid',
+            'amount' => 'required|numeric|min:0',
+            'cost_type' => 'required|in:monthly_fee,installment,maintainance,service_cost,development_fee',
+            'development_uid' => 'nullable|string|exists:society_developments,development_uid',
+        ]);
+        $validated['cost_uid'] = 'COST_' . rand(100000, 999999);
+        FlatOwnerCost::create($validated);
+        return back()->with('success', 'Flat owner cost added successfully!');
     }
 
+    public function update_flat_owner_cost(Request $request)
+    {
+        $validated = $request->validate([
+            'cost_uid' => 'required|string|exists:flat_owner_costs,cost_uid',
+            'owner_uid' => 'required|string|exists:flat_owners,owner_uid',
+            'amount' => 'required|numeric|min:0',
+            'cost_type' => 'required|in:monthly_fee,installment,maintainance,service_cost,development_fee',
+            'development_uid' => 'nullable|string|exists:society_developments,development_uid',
+        ]);
+        $cost = FlatOwnerCost::where('cost_uid', $validated['cost_uid'])->firstOrFail();
+        $cost->update($validated);
+        return back()->with('success', 'Flat owner cost updated successfully!');
+    }
 
+    public function delete_flat_owner_cost(Request $request)
+    {
+        $request->validate([
+            'cost_uid' => 'required|string|exists:flat_owner_costs,cost_uid',
+        ]);
+        FlatOwnerCost::where('cost_uid', $request->cost_uid)->delete();
+        return back()->with('success', 'Flat owner cost deleted successfully!');
+    }
 
-    public function society_expanditure(){
-        $data = [];
-        return Inertia::render('admin/society_costs', compact('data'));
+    public function tenant_bills()
+    {
+        $bills = TenantBill::latest()->get();
+        $tenants = Tenant::all(['tenant_uid', 'name', 'renting_flats']);
+        return Inertia::render('admin/tenant_bills', compact('bills', 'tenants'));
+    }
+
+    public function create_tenant_bill(Request $request)
+    {
+        $validated = $request->validate([
+            'tenant_uid' => 'required|string|exists:tenants,tenant_uid',
+            'amount' => 'required|numeric|min:0',
+            'status' => 'required|in:pending,accepted,denied',
+            'billing_month' => 'required|string|regex:/^\d{4}-\d{2}$/',
+            'payment_method' => 'required|in:cash,bank_transfer,cheque,bkash,nagad,rocket,card,other',
+            'bill_type' => 'required|in:monthly,electricity,water,gas,wifi,dish,garage,utility,other',
+            'sent_money_to' => 'required|in:flat_owner,guard,society_lead,other',
+            'note' => 'nullable|string',
+            'transaction_id' => 'nullable|string|unique:tenant_bills,transaction_id',
+        ]);
+        
+        if (empty($validated['transaction_id'])) {
+            $validated['transaction_id'] = 'TXN_' . rand(100000, 999999);
+        }
+        
+        $validated['is_admin_modified'] = false;
+        
+        TenantBill::create($validated);
+        return back()->with('success', 'Tenant bill created successfully!');
+    }
+
+    public function update_tenant_bill(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:tenant_bills,id',
+            'tenant_uid' => 'required|string|exists:tenants,tenant_uid',
+            'amount' => 'required|numeric|min:0',
+            'status' => 'required|in:pending,accepted,denied',
+            'billing_month' => 'required|string|regex:/^\d{4}-\d{2}$/',
+            'payment_method' => 'required|in:cash,bank_transfer,cheque,bkash,nagad,rocket,card,other',
+            'bill_type' => 'required|in:monthly,electricity,water,gas,wifi,dish,garage,utility,other',
+            'sent_money_to' => 'required|in:flat_owner,guard,society_lead,other',
+            'note' => 'nullable|string',
+            'transaction_id' => 'required|string|unique:tenant_bills,transaction_id,' . $request->id,
+        ]);
+        
+        $bill = TenantBill::findOrFail($validated['id']);
+        
+        $isChanged = false;
+        foreach (['amount', 'billing_month', 'payment_method', 'bill_type', 'sent_money_to', 'note', 'transaction_id'] as $field) {
+            if ($bill->$field != $validated[$field]) {
+                $isChanged = true;
+                break;
+            }
+        }
+        
+        if ($isChanged) {
+            $validated['is_admin_modified'] = true;
+        }
+        
+        $bill->update($validated);
+        return back()->with('success', 'Tenant bill updated successfully!');
+    }
+
+    public function delete_tenant_bill(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:tenant_bills,id',
+        ]);
+        TenantBill::findOrFail($request->id)->delete();
+        return back()->with('success', 'Tenant bill deleted successfully!');
+    }
+
+    public function society_expanditure()
+    {
+        $costs = SocietyCosts::latest()->get();
+        $developments = SocietyDevelopment::all(['development_uid', 'title']);
+        return Inertia::render('admin/society_costs', compact('costs', 'developments'));
+    }
+
+    public function create_society_cost(Request $request)
+    {
+        $validated = $request->validate([
+            'cost_type' => 'required|in:guard_fee,development_fee,lift_fee,monthly_fee,new_installation,other',
+            'development_uid' => 'nullable|string|exists:society_developments,development_uid',
+            'amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,bank_transfer,cheque,bkash,nagad,rocket,card,other',
+            'cost_details' => 'nullable|string',
+        ]);
+        
+        $validated['cost_uid'] = 'SOC_' . rand(100000, 999999);
+        SocietyCosts::create($validated);
+        return back()->with('success', 'Society cost created successfully!');
+    }
+
+    public function update_society_cost(Request $request)
+    {
+        $validated = $request->validate([
+            'cost_uid' => 'required|string|exists:society_costs,cost_uid',
+            'cost_type' => 'required|in:guard_fee,development_fee,lift_fee,monthly_fee,new_installation,other',
+            'development_uid' => 'nullable|string|exists:society_developments,development_uid',
+            'amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,bank_transfer,cheque,bkash,nagad,rocket,card,other',
+            'cost_details' => 'nullable|string',
+        ]);
+        
+        $cost = SocietyCosts::where('cost_uid', $validated['cost_uid'])->firstOrFail();
+        $cost->update($validated);
+        return back()->with('success', 'Society cost updated successfully!');
+    }
+
+    public function delete_society_cost(Request $request)
+    {
+        $request->validate([
+            'cost_uid' => 'required|string|exists:society_costs,cost_uid',
+        ]);
+        SocietyCosts::where('cost_uid', $request->cost_uid)->delete();
+        return back()->with('success', 'Society cost deleted successfully!');
     }
 
 

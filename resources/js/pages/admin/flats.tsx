@@ -1,34 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogClose,
-} from '@/components/ui/dialog';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -39,24 +13,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-    ChevronUp,
-    ChevronDown,
-    ChevronsUpDown,
-    Plus,
-    Pencil,
-    Trash2,
-    Search,
-    ChevronLeft,
-    ChevronRight,
-    X,
-    Upload,
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, Pencil, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import FlashMessage from '../FlashMessage';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Flats', href: '/flats' },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Flats', href: '/flats' }];
 
 interface Flat {
     id: number;
@@ -217,7 +183,7 @@ export default function Flats({ flats, apartments }: Props) {
                 f.flat_type.toLowerCase().includes(q) ||
                 (f.owner_uid ?? '').toLowerCase().includes(q) ||
                 (f.appartment_uid
-                    ? (apartments.find(a => a.appartment_uid === f.appartment_uid)?.appartment_name ?? '').toLowerCase().includes(q)
+                    ? (apartments.find((a) => a.appartment_uid === f.appartment_uid)?.appartment_name ?? '').toLowerCase().includes(q)
                     : false),
         );
     }, [flats, apartments, search]);
@@ -347,13 +313,11 @@ export default function Flats({ flats, apartments }: Props) {
             rented: 'bg-blue-100 text-blue-700',
             to_rent: 'bg-amber-100 text-amber-700',
             to_live: 'bg-green-100 text-green-700',
-        }[v] ?? 'bg-gray-100 text-gray-700');
+        })[v] ?? 'bg-gray-100 text-gray-700';
 
-    const typeLabel = (v: string) =>
-        ({ rented: 'Rented', to_rent: 'To Rent', to_live: 'To Live' }[v] ?? v);
+    const typeLabel = (v: string) => ({ rented: 'Rented', to_rent: 'To Rent', to_live: 'To Live' })[v] ?? v;
 
-    const amenityBadge = (v: 'yes' | 'no') =>
-        v === 'yes' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400';
+    const amenityBadge = (v: 'yes' | 'no') => (v === 'yes' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -366,11 +330,13 @@ export default function Flats({ flats, apartments }: Props) {
                         <h1 className="text-2xl font-bold tracking-tight">Flats</h1>
                         <p className="text-muted-foreground text-sm">Manage all flats belonging to the apartments</p>
                     </div>
-                    <Button onClick={() => {
-                        createForm.reset();
-                        createForm.setData('flatID', generateUID());
-                        setShowCreateModal(true);
-                    }}>
+                    <Button
+                        onClick={() => {
+                            createForm.reset();
+                            createForm.setData('flatID', generateUID());
+                            setShowCreateModal(true);
+                        }}
+                    >
                         <Plus className="mr-2 h-4 w-4" />
                         New Flat
                     </Button>
@@ -402,16 +368,16 @@ export default function Flats({ flats, apartments }: Props) {
                                 <TableHead className="cursor-pointer select-none" onClick={() => handleSort('flat_type')}>
                                     Type <SortIcon field="flat_type" />
                                 </TableHead>
-                                <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('flat_size')}>
+                                <TableHead className="cursor-pointer text-right select-none" onClick={() => handleSort('flat_size')}>
                                     Size (sqft) <SortIcon field="flat_size" />
                                 </TableHead>
-                                <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('flat_bhk')}>
+                                <TableHead className="cursor-pointer text-right select-none" onClick={() => handleSort('flat_bhk')}>
                                     BHK <SortIcon field="flat_bhk" />
                                 </TableHead>
-                                <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('flat_price')}>
+                                <TableHead className="cursor-pointer text-right select-none" onClick={() => handleSort('flat_price')}>
                                     Price <SortIcon field="flat_price" />
                                 </TableHead>
-                                <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('rent_price')}>
+                                <TableHead className="cursor-pointer text-right select-none" onClick={() => handleSort('rent_price')}>
                                     Rent <SortIcon field="rent_price" />
                                 </TableHead>
                                 <TableHead>Amenities</TableHead>
@@ -433,9 +399,13 @@ export default function Flats({ flats, apartments }: Props) {
                                     <TableRow key={flat.id}>
                                         <TableCell className="font-mono text-xs">{flat.flatID}</TableCell>
                                         <TableCell className="text-sm">
-                                            {flat.appartment_uid
-                                                ? (apartments.find(a => a.appartment_uid === flat.appartment_uid)?.appartment_name ?? <span className="text-muted-foreground font-mono text-xs">{flat.appartment_uid}</span>)
-                                                : <span className="text-muted-foreground">—</span>}
+                                            {flat.appartment_uid ? (
+                                                (apartments.find((a) => a.appartment_uid === flat.appartment_uid)?.appartment_name ?? (
+                                                    <span className="text-muted-foreground font-mono text-xs">{flat.appartment_uid}</span>
+                                                ))
+                                            ) : (
+                                                <span className="text-muted-foreground">—</span>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeBadgeColor(flat.flat_type)}`}>
@@ -446,20 +416,25 @@ export default function Flats({ flats, apartments }: Props) {
                                         <TableCell className="text-right">{flat.flat_bhk}</TableCell>
                                         <TableCell className="text-right">৳{Number(flat.flat_price).toLocaleString('en-us')}</TableCell>
                                         <TableCell className="text-right">
-                                            {flat.rent_price ? `৳${Number(flat.rent_price).toLocaleString('en-us')}` : <span className="text-muted-foreground">—</span>}
+                                            {flat.rent_price ? (
+                                                `৳${Number(flat.rent_price).toLocaleString('en-us')}`
+                                            ) : (
+                                                <span className="text-muted-foreground">—</span>
+                                            )}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex gap-1 flex-wrap">
+                                            <div className="flex flex-wrap gap-1">
                                                 {(['wifi', 'gas', 'lift', 'intercom', 'dish'] as const).map((key) => (
-                                                    <span key={key} className={`rounded-full px-1.5 py-0.5 text-xs font-medium uppercase ${amenityBadge(flat[key])}`}>
+                                                    <span
+                                                        key={key}
+                                                        className={`rounded-full px-1.5 py-0.5 text-xs font-medium uppercase ${amenityBadge(flat[key])}`}
+                                                    >
                                                         {key}
                                                     </span>
                                                 ))}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="capitalize text-xs">
-                                            {flat.drawing_dyning_kitchen.replace(/_/g, ' ')}
-                                        </TableCell>
+                                        <TableCell className="text-xs capitalize">{flat.drawing_dyning_kitchen.replace(/_/g, ' ')}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
                                                 <Button variant="ghost" size="icon" onClick={() => handleEditOpen(flat)}>
@@ -501,7 +476,9 @@ export default function Flats({ flats, apartments }: Props) {
                             }, [])
                             .map((p, i) =>
                                 p === '...' ? (
-                                    <span key={`ellipsis-${i}`} className="px-2">…</span>
+                                    <span key={`ellipsis-${i}`} className="px-2">
+                                        …
+                                    </span>
                                 ) : (
                                     <Button
                                         key={p}
@@ -551,7 +528,7 @@ export default function Flats({ flats, apartments }: Props) {
 
             {/* Delete Dialog */}
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent className="bg-red-50 border border-red-500">
+                <AlertDialogContent className="border border-red-500 bg-red-50">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-red-700">Delete Flat</AlertDialogTitle>
                         <AlertDialogDescription className="text-red-400">
@@ -560,10 +537,7 @@ export default function Flats({ flats, apartments }: Props) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
-                            onClick={handleDelete}
-                        >
+                        <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500" onClick={handleDelete}>
                             Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -621,7 +595,10 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
         URL.revokeObjectURL(next[index].preview);
         next.splice(index, 1);
         setImagePreviews(next);
-        setData('flat_images', next.map((p) => p.file));
+        setData(
+            'flat_images',
+            next.map((p) => p.file),
+        );
     };
 
     const removeExistingImage = (index: number) => {
@@ -632,7 +609,7 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
     };
 
     const field = (name: keyof any, label: string, type = 'text', required = false, readOnly = false) => (
-        <div className="grid gap-1.5 w-full">
+        <div className="grid w-full gap-1.5">
             <Label htmlFor={name as string}>
                 {label} {required && <span className="text-destructive">*</span>}
             </Label>
@@ -649,13 +626,8 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
         </div>
     );
 
-    const selectField = (
-        name: keyof any,
-        label: string,
-        options: { value: string; label: string }[],
-        required = false,
-    ) => (
-        <div className="grid gap-1.5 w-full">
+    const selectField = (name: keyof any, label: string, options: { value: string; label: string }[], required = false) => (
+        <div className="grid w-full gap-1.5">
             <Label>
                 {label} {required && <span className="text-destructive">*</span>}
             </Label>
@@ -681,7 +653,12 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
     ];
 
     return (
-        <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+        <Dialog
+            open={open}
+            onOpenChange={(v) => {
+                if (!v) onClose();
+            }}
+        >
             <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-y-auto lg:max-w-5xl">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
@@ -727,12 +704,17 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
                     {field('tot_balconies', 'Total Balconies', 'number', true)}
 
                     {/* Layout */}
-                    {selectField('drawing_dyning_kitchen', 'Drawing/Dining/Kitchen', [
-                        { value: 'all_together', label: 'Combined' },
-                        { value: 'all_seperate', label: 'Seperate' },
-                        { value: 'seperate_kitchen', label: 'Seperate Kitchen' },
-                        { value: 'seperate_drawing', label: 'Seperate Drawing' },
-                    ], true)}
+                    {selectField(
+                        'drawing_dyning_kitchen',
+                        'Drawing/Dining/Kitchen',
+                        [
+                            { value: 'all_together', label: 'Combined' },
+                            { value: 'all_seperate', label: 'Seperate' },
+                            { value: 'seperate_kitchen', label: 'Seperate Kitchen' },
+                            { value: 'seperate_drawing', label: 'Seperate Drawing' },
+                        ],
+                        true,
+                    )}
 
                     {/* Amenities */}
                     {selectField('wifi', 'WiFi', yesNoOptions, true)}
@@ -742,9 +724,7 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
                     {selectField('lift', 'Lift', yesNoOptions, true)}
 
                     {/* 3D Video */}
-                    <div className="sm:col-span-2">
-                        {field('flat_3d_video', '3D Video URL')}
-                    </div>
+                    <div className="sm:col-span-2">{field('flat_3d_video', '3D Video URL')}</div>
 
                     {/* Image Upload */}
                     <div className="sm:col-span-2">
@@ -753,10 +733,10 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
 
                             {!isCreate && existingImageUrls.length > 0 && (
                                 <div className="mb-4">
-                                    <Label className="text-sm text-muted-foreground mb-2 block">Current Images</Label>
+                                    <Label className="text-muted-foreground mb-2 block text-sm">Current Images</Label>
                                     <div className="flex flex-wrap gap-3">
                                         {existingImageUrls.map((url, idx) => (
-                                            <div key={`existing-${idx}`} className="relative h-24 w-24 overflow-hidden rounded-md border group">
+                                            <div key={`existing-${idx}`} className="group relative h-24 w-24 overflow-hidden rounded-md border">
                                                 <img
                                                     src={url}
                                                     alt={`Existing ${idx + 1}`}
@@ -767,7 +747,7 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
                                                 />
                                                 <button
                                                     type="button"
-                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
                                                     onClick={() => removeExistingImage(idx)}
                                                 >
                                                     <X className="h-3 w-3" />
@@ -780,18 +760,14 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
 
                             {imagePreviews.length > 0 && (
                                 <div className="mb-4">
-                                    <Label className="text-sm text-muted-foreground mb-2 block">New Images</Label>
+                                    <Label className="text-muted-foreground mb-2 block text-sm">New Images</Label>
                                     <div className="flex flex-wrap gap-3">
                                         {imagePreviews.map((preview, idx) => (
-                                            <div key={`new-${idx}`} className="relative h-24 w-24 overflow-hidden rounded-md border group">
-                                                <img
-                                                    src={preview.preview}
-                                                    alt={`Preview ${idx + 1}`}
-                                                    className="h-full w-full object-cover"
-                                                />
+                                            <div key={`new-${idx}`} className="group relative h-24 w-24 overflow-hidden rounded-md border">
+                                                <img src={preview.preview} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
                                                 <button
                                                     type="button"
-                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="bg-destructive absolute top-1 right-1 rounded-full p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
                                                     onClick={() => removeNewImage(idx)}
                                                 >
                                                     <X className="h-3 w-3" />
@@ -829,7 +805,7 @@ function FlatModal({ open, onClose, title, form, onSubmit, submitLabel, isCreate
                             <Label htmlFor="note">Notes</Label>
                             <textarea
                                 id="note"
-                                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                                 value={data.note ?? ''}
                                 onChange={(e) => setData('note', e.target.value)}
                             />

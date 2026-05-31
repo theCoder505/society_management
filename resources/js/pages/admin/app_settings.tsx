@@ -29,15 +29,7 @@ interface PageProps {
 }
 
 // ---------- Rich Text Editor (Tiptap-style pure JS minimal editor) ----------
-function RichTextEditor({
-    value,
-    onChange,
-    placeholder,
-}: {
-    value: string;
-    onChange: (v: string) => void;
-    placeholder?: string;
-}) {
+function RichTextEditor({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
     const editorRef = useRef<HTMLDivElement>(null);
     const isInitialized = useRef(false);
 
@@ -62,28 +54,28 @@ function RichTextEditor({
                 e.preventDefault();
                 action();
             }}
-            className="px-2 py-1 text-xs font-semibold bg-transparent border border-transparent rounded hover:bg-white hover:border-gray-200 transition-colors"
+            className="rounded border border-transparent bg-transparent px-2 py-1 text-xs font-semibold transition-colors hover:border-gray-200 hover:bg-white"
         >
             {label}
         </button>
     );
 
     return (
-        <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:border-indigo-600 focus-within:ring-3 focus-within:ring-indigo-100">
-            <div className="flex flex-wrap gap-0.5 p-2 bg-gray-50 border-b border-gray-200 text-black">
+        <div className="overflow-hidden rounded-lg border border-gray-200 focus-within:border-indigo-600 focus-within:ring-3 focus-within:ring-indigo-100">
+            <div className="flex flex-wrap gap-0.5 border-b border-gray-200 bg-gray-50 p-2 text-black">
                 {toolbarBtn('B', () => exec('bold'), 'Bold')}
                 {toolbarBtn('I', () => exec('italic'), 'Italic')}
                 {toolbarBtn('U', () => exec('underline'), 'Underline')}
                 {toolbarBtn('S', () => exec('strikeThrough'), 'Strikethrough')}
-                <span className="w-px bg-gray-200 mx-1 self-stretch" />
+                <span className="mx-1 w-px self-stretch bg-gray-200" />
                 {toolbarBtn('H1', () => exec('formatBlock', 'h1'), 'Heading 1')}
                 {toolbarBtn('H2', () => exec('formatBlock', 'h2'), 'Heading 2')}
                 {toolbarBtn('H3', () => exec('formatBlock', 'h3'), 'Heading 3')}
                 {toolbarBtn('P', () => exec('formatBlock', 'p'), 'Paragraph')}
-                <span className="w-px bg-gray-200 mx-1 self-stretch" />
+                <span className="mx-1 w-px self-stretch bg-gray-200" />
                 {toolbarBtn('• List', () => exec('insertUnorderedList'), 'Bullet List')}
                 {toolbarBtn('1. List', () => exec('insertOrderedList'), 'Numbered List')}
-                <span className="w-px bg-gray-200 mx-1 self-stretch" />
+                <span className="mx-1 w-px self-stretch bg-gray-200" />
                 {toolbarBtn(
                     'Link',
                     () => {
@@ -93,7 +85,7 @@ function RichTextEditor({
                     'Insert Link',
                 )}
                 {toolbarBtn('Unlink', () => exec('unlink'), 'Remove Link')}
-                <span className="w-px bg-gray-200 mx-1 self-stretch" />
+                <span className="mx-1 w-px self-stretch bg-gray-200" />
                 {toolbarBtn('Undo', () => exec('undo'), 'Undo')}
                 {toolbarBtn('Redo', () => exec('redo'), 'Redo')}
             </div>
@@ -101,7 +93,7 @@ function RichTextEditor({
                 ref={editorRef}
                 contentEditable
                 suppressContentEditableWarning
-                className="min-h-[180px] p-3 text-sm text-gray-900 outline-none leading-relaxed bg-white prose prose-sm max-w-none"
+                className="prose prose-sm min-h-[180px] max-w-none bg-white p-3 text-sm leading-relaxed text-gray-900 outline-none"
                 data-placeholder={placeholder}
                 onInput={() => onChange(editorRef.current?.innerHTML || '')}
                 onBlur={() => onChange(editorRef.current?.innerHTML || '')}
@@ -139,7 +131,7 @@ function ImageUploadField({
         <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700 dark:text-gray-400">{label}</label>
             <div
-                className="border-2 border-dashed border-gray-300 rounded-lg cursor-pointer transition-colors hover:border-indigo-600 hover:bg-indigo-50/30 overflow-hidden relative min-h-[140px] flex items-center justify-center dark:bg-transparent dark:text-gray-100"
+                className="relative flex min-h-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-indigo-600 hover:bg-indigo-50/30 dark:bg-transparent dark:text-gray-100"
                 onClick={() => inputRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
@@ -149,20 +141,20 @@ function ImageUploadField({
                 }}
             >
                 {preview ? (
-                    <div className="relative w-full min-h-[140px] flex items-center justify-center">
+                    <div className="relative flex min-h-[140px] w-full items-center justify-center">
                         <img src={preview} alt="Preview" className="max-h-[140px] max-w-full object-contain p-3" />
-                        <div className="absolute inset-0 bg-black/45 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity text-white text-xs font-medium">
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-xs font-medium text-white opacity-0 transition-opacity hover:opacity-100">
                             Click or drop to replace
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center gap-1 text-gray-400 p-6 text-center">
+                    <div className="flex flex-col items-center gap-1 p-6 text-center text-gray-400">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <rect x="3" y="3" width="18" height="18" rx="2" />
                             <circle cx="8.5" cy="8.5" r="1.5" />
                             <polyline points="21 15 16 10 5 21" />
                         </svg>
-                        <p className="text-sm font-medium text-gray-700 m-0">Click or drag PNG image here</p>
+                        <p className="m-0 text-sm font-medium text-gray-700">Click or drag PNG image here</p>
                         <span className="text-xs">PNG only · Max 10 MB</span>
                     </div>
                 )}
@@ -178,7 +170,7 @@ function ImageUploadField({
                     if (file) handleFile(file);
                 }}
             />
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+            {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
         </div>
     );
 }
@@ -186,14 +178,12 @@ function ImageUploadField({
 // ---------- Section Card ----------
 function SectionCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
     return (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm dark:bg-transparent dark:border-gray-900">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 bg-gray-50 dark:bg-transparent">
-                <span className="w-8 h-8 flex items-center justify-center bg-indigo-100 rounded-md text-indigo-600 flex-shrink-0">
-                    {icon}
-                </span>
-                <h2 className="text-sm font-semibold text-gray-900 tracking-tight dark:text-gray-200">{title}</h2>
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-900 dark:bg-transparent">
+            <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-5 py-3 dark:bg-transparent">
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-indigo-100 text-indigo-600">{icon}</span>
+                <h2 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-200">{title}</h2>
             </div>
-            <div className="p-5 flex flex-col gap-3">{children}</div>
+            <div className="flex flex-col gap-3 p-5">{children}</div>
         </div>
     );
 }
@@ -227,7 +217,7 @@ function InputField({
                 value={value}
                 placeholder={placeholder}
                 onChange={(e) => onChange(e.target.value)}
-                className={`w-full px-3 py-2 text-sm border-2 rounded-lg bg-white dark:bg-transparent text-gray-900 dark:text-gray-100 transition-colors outline-none focus:border-indigo-600 focus:ring-3 focus:ring-indigo-100 ${
+                className={`w-full rounded-lg border-2 bg-white px-3 py-2 text-sm text-gray-900 transition-colors outline-none focus:border-indigo-600 focus:ring-3 focus:ring-indigo-100 dark:bg-transparent dark:text-gray-100 ${
                     error ? 'border-red-500' : 'border-gray-200'
                 }`}
             />
@@ -264,28 +254,28 @@ function GoogleMapsField({
                 placeholder={placeholder}
                 rows={3}
                 onChange={(e) => onChange(e.target.value)}
-                className={`w-full px-3 py-2 text-sm border-2 rounded-lg bg-white text-gray-900 transition-colors outline-none dark:bg-transparent dark:text-gray-100 focus:border-indigo-600 focus:ring-3 focus:ring-indigo-100 font-mono ${
+                className={`w-full rounded-lg border-2 bg-white px-3 py-2 font-mono text-sm text-gray-900 transition-colors outline-none focus:border-indigo-600 focus:ring-3 focus:ring-indigo-100 dark:bg-transparent dark:text-gray-100 ${
                     error ? 'border-red-500' : 'border-gray-200'
                 }`}
             />
             {error && <p className="text-xs text-red-500">{error}</p>}
-            
+
             {/* Live Preview of the iframe */}
             {value && value.trim() && (
                 <div className="mt-3">
-                    <p className="text-xs font-semibold text-gray-700 mb-2 dark:text-gray-400">Preview:</p>
-                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <p className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-400">Preview:</p>
+                    <div className="overflow-hidden rounded-lg border border-gray-200">
                         <iframe
                             srcDoc={value}
                             title="Google Maps Preview"
-                            className="w-full h-[300px] border-0"
+                            className="h-[300px] w-full border-0"
                             sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                         />
                     </div>
                 </div>
             )}
-            
-            <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
+
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Paste the full Google Maps iframe embed code here. Example: {'<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'}
             </p>
         </div>
@@ -399,24 +389,38 @@ export default function AppSettings() {
             <Head title="App Settings" />
 
             <form onSubmit={handleSubmit} encType="multipart/form-data">
-                <div className="p-6 mx-auto flex flex-col gap-6">
+                <div className="mx-auto flex flex-col gap-6 p-6">
                     {/* ── Page Header ── */}
-                    <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight dark:text-gray-100">App Settings</h1>
-                            <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-300">Manage your application brand, contact, and content settings.</p>
+                            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">App Settings</h1>
+                            <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-300">
+                                Manage your application brand, contact, and content settings.
+                            </p>
                         </div>
-                        <div className="flex gap-2 items-center">
-                            <button type="button" className="inline-flex items-center gap-1.5 px-4 py-2 bg-transparent text-gray-700 dark:text-gray-200 border-2 border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors" onClick={handleReset} disabled={processing}>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                className="inline-flex items-center gap-1.5 rounded-lg border-2 border-gray-200 bg-transparent px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 dark:text-gray-200"
+                                onClick={handleReset}
+                                disabled={processing}
+                            >
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                     <polyline points="1 4 1 10 7 10" />
                                     <path d="M3.51 15a9 9 0 1 0 .49-3" />
                                 </svg>
                                 Reset
                             </button>
-                            <button type="submit" className="inline-flex items-center gap-1.5 px-5 py-2 bg-indigo-600 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all hover:bg-indigo-700 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed" disabled={processing}>
+                            <button
+                                type="submit"
+                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-indigo-600 px-5 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-700 active:scale-98 disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={processing}
+                            >
                                 {processing ? (
-                                    <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
+                                    <>
+                                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />{' '}
+                                        Saving…
+                                    </>
                                 ) : (
                                     <>
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -451,7 +455,7 @@ export default function AppSettings() {
                             error={errors.brand_name}
                             placeholder="e.g. Acme Corp"
                         />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <ImageUploadField
                                 label="Brand Logo (PNG)"
                                 name="brand_logo"
@@ -479,7 +483,7 @@ export default function AppSettings() {
                             </svg>
                         }
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <InputField
                                 label="Contact Email"
                                 name="contact_email"
@@ -498,7 +502,7 @@ export default function AppSettings() {
                                 placeholder="123 Main St, City, Country"
                             />
                         </div>
-                        
+
                         {/* Google Maps Iframe Field */}
                         <GoogleMapsField
                             label="Google Maps Embed"
@@ -523,7 +527,7 @@ export default function AppSettings() {
                             </svg>
                         }
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <InputField
                                 label="Facebook"
                                 name="facebook"
@@ -571,15 +575,9 @@ export default function AppSettings() {
                         }
                     >
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-gray-400">
-                                About Content
-                            </label>
-                            <RichTextEditor
-                                value={data.about}
-                                onChange={(v) => setData('about', v)}
-                                placeholder="Write about your company…"
-                            />
-                            {errors.about && <p className="text-xs text-red-500 mt-1">{errors.about}</p>}
+                            <label className="mb-1 block text-xs font-semibold text-gray-700 dark:text-gray-400">About Content</label>
+                            <RichTextEditor value={data.about} onChange={(v) => setData('about', v)} placeholder="Write about your company…" />
+                            {errors.about && <p className="mt-1 text-xs text-red-500">{errors.about}</p>}
                         </div>
                     </SectionCard>
 
@@ -593,15 +591,13 @@ export default function AppSettings() {
                         }
                     >
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-gray-400">
-                                Privacy Policy Content
-                            </label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-700 dark:text-gray-400">Privacy Policy Content</label>
                             <RichTextEditor
                                 value={data.privacy_policy}
                                 onChange={(v) => setData('privacy_policy', v)}
                                 placeholder="Write your privacy policy…"
                             />
-                            {errors.privacy_policy && <p className="text-xs text-red-500 mt-1">{errors.privacy_policy}</p>}
+                            {errors.privacy_policy && <p className="mt-1 text-xs text-red-500">{errors.privacy_policy}</p>}
                         </div>
                     </SectionCard>
 
@@ -619,27 +615,37 @@ export default function AppSettings() {
                         }
                     >
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-gray-400">
-                                Terms & Conditions Content
-                            </label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-700 dark:text-gray-400">Terms & Conditions Content</label>
                             <RichTextEditor
                                 value={data.terms_conditions}
                                 onChange={(v) => setData('terms_conditions', v)}
                                 placeholder="Write your terms and conditions…"
                             />
-                            {errors.terms_conditions && <p className="text-xs text-red-500 mt-1">{errors.terms_conditions}</p>}
+                            {errors.terms_conditions && <p className="mt-1 text-xs text-red-500">{errors.terms_conditions}</p>}
                         </div>
                     </SectionCard>
 
                     {/* ── Bottom Save Bar ── */}
                     <div className="flex justify-end pb-4">
                         <div className="flex gap-2">
-                            <button type="button" className="inline-flex items-center gap-1.5 px-4 py-2 bg-transparent text-gray-700 border-2 border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors dark:text-gray-100" onClick={handleReset} disabled={processing}>
+                            <button
+                                type="button"
+                                className="inline-flex items-center gap-1.5 rounded-lg border-2 border-gray-200 bg-transparent px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 dark:text-gray-100"
+                                onClick={handleReset}
+                                disabled={processing}
+                            >
                                 Reset
                             </button>
-                            <button type="submit" className="inline-flex items-center gap-1.5 px-5 py-2 bg-indigo-600 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all hover:bg-indigo-700 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed" disabled={processing}>
+                            <button
+                                type="submit"
+                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-indigo-600 px-5 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-700 active:scale-98 disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={processing}
+                            >
                                 {processing ? (
-                                    <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
+                                    <>
+                                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />{' '}
+                                        Saving…
+                                    </>
                                 ) : (
                                     <>
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

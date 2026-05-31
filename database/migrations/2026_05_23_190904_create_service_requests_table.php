@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('to_owner_uid');
             $table->string('title');
             $table->string('requet_details');
-            $table->enum('approve_status', [0, 1])->default(0);
+            $table->string('approve_status')->default('pending');
             $table->timestamps();
             $table->foreign('from_tenant_uid')->references('tenant_uid')->on('tenants')->onDelete('cascade');
         });

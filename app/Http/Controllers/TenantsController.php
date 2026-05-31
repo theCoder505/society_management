@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Tenant;
 use App\Models\Appartment;
 use App\Models\Flat;
+use App\Models\FlatOwner;
+use App\Models\Notice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -269,7 +271,61 @@ class TenantsController extends Controller
 
     public function tenant_notices()
     {
-        $data = [];
-        return Inertia::render('admin/tenant_notices', compact('data'));
+        $notices = Notice::latest()->get();
+        $tenants = Tenant::all(['tenant_uid', 'name']);
+        $owners = FlatOwner::all(['owner_uid', 'name']);
+        return Inertia::render('admin/tenant_notices', compact('notices', 'tenants', 'owners'));
+    }
+
+    public function create_notice(Request $request)
+    {
+        $validated = $request->validate([
+            'from_owner_uid' => 'required|string',
+            'to_tenant_uid' => 'required|string|exists:tenants,tenant_uid',
+            'title' => 'required|string|max:255',
+            'notice_details' => 'required|string',
+            'is_complied' => 'nullable|boolean',
+        ]);
+        
+        $validated['notice_uid'] = 'NTC_' . rand(100000, 999999);
+        $validated['is_complied'] = $request->input('is_complied', false);
+        if ($validated['is_complied']) {
+            $validated['complied_at'] = now();
+        }
+        
+        Notice::create($validated);
+        return back()->with('success', 'Notice created successfully!');
+    }
+
+    public function update_notice(Request $request)
+    {
+        $validated = $request->validate([
+            'notice_uid' => 'required|string|exists:notices,notice_uid',
+            'from_owner_uid' => 'required|string',
+            'to_tenant_uid' => 'required|string|exists:tenants,tenant_uid',
+            'title' => 'required|string|max:255',
+            'notice_details' => 'required|string',
+            'is_complied' => 'required|boolean',
+        ]);
+        
+        $notice = Notice::where('notice_uid', $validated['notice_uid'])->firstOrFail();
+        
+        if ($validated['is_complied'] && !$notice->is_complied) {
+            $validated['complied_at'] = now();
+        } elseif (!$validated['is_complied']) {
+            $validated['complied_at'] = null;
+        }
+        
+        $notice->update($validated);
+        return back()->with('success', 'Notice updated successfully!');
+    }
+
+    public function delete_notice(Request $request)
+    {
+        $request->validate([
+            'notice_uid' => 'required|string|exists:notices,notice_uid',
+        ]);
+        Notice::where('notice_uid', $request->notice_uid)->delete();
+        return back()->with('success', 'Notice deleted successfully!');
     }
 }

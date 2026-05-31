@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Tenant extends Model
+class Tenant extends Authenticatable
 {
+    use Notifiable;
+
     protected $fillable = [
         'tenant_uid',
         'name',
@@ -19,18 +22,24 @@ class Tenant extends Model
         'nid_front',
         'nid_back',
         'renting_flats',           // JSON array: ['FLAT_A1','FLAT_A2']
-        'starting_rent_amount',    // JSON object: { FLAT_A1: 8000, FLAT_A2: 9000 } — auto-populated, view only
-        'current_rent_amount',     // JSON object: { FLAT_A1: 8500 } — editable
+        'starting_rent_amount',    // JSON object: { FLAT_A1: 8000, FLAT_A2: 9000 }
+        'current_rent_amount',     // JSON object: { FLAT_A1: 8500 }
         'family_members',
         'renting_since',
         'notes',
+        'profile_status',
     ];
 
-    
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected $casts = [
         'renting_flats'         => 'array',
         'starting_rent_amount'  => 'array',
         'current_rent_amount'   => 'array',
         'renting_since'         => 'date',
+        'password'              => 'hashed',
     ];
 }

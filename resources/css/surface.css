@@ -1,0 +1,119 @@
+/* resources/css/surface.css */
+
+:root {
+  --color-primary: hsl(210, 60%, 55%);
+  --color-primary-foreground: hsl(0, 0%, 100%);
+  --color-background: hsl(0, 0%, 100%);
+  --color-foreground: hsl(210, 15%, 15%);
+  --color-muted: hsl(210, 10%, 90%);
+  --color-muted-foreground: hsl(210, 5%, 40%);
+  --color-border: hsl(210, 12%, 85%);
+  --color-card: hsl(0, 0%, 100%);
+  --color-card-foreground: hsl(210, 15%, 15%);
+  --color-glass: rgba(255, 255, 255, 0.4);
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+}
+
+[data-theme='dark'] {
+  --color-primary: hsl(210, 60%, 65%);
+  --color-primary-foreground: hsl(0, 0%, 0%);
+  --color-background: hsl(210, 30%, 10%);
+  --color-foreground: hsl(0, 0%, 95%);
+  --color-muted: hsl(210, 12%, 20%);
+  --color-muted-foreground: hsl(210, 5%, 60%);
+  --color-border: hsl(210, 12%, 25%);
+  --color-card: hsl(210, 25%, 15%);
+  --color-card-foreground: hsl(0, 0%, 95%);
+  --color-glass: rgba(0, 0, 0, 0.4);
+}
+
+html {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* generic utilities */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-weight: 600;
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(8px);
+  transition: background var(--transition-speed), transform var(--transition-speed);
+}
+
+.btn-primary:hover {
+  background: hsl(210, 60%, 45%);
+  transform: translateY(-2px);
+}
+
+.surface-hero {
+  position: relative;
+  text-align: center;
+}
+
+.surface-apartments {
+  background: var(--color-glass);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-top: -2rem; /* overlap hero */
+}
+
+.apartment-card {
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-glass);
+  transition: transform var(--transition-speed);
+}
+
+.apartment-card:hover {
+  transform: translateY(-4px);
+}
+
+.apartment-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.apartment-card-content {
+  padding: 1rem;
+}
+
+.apartment-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.apartment-card-desc {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-muted-foreground);
+}
+
+.apartment-card-rent {
+  font-weight: 500;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.apartment-card-btn {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.icon-plus {
+  font-size: 1.2rem;
+  margin-right: 0.25rem;
+}

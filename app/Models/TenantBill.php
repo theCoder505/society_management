@@ -10,9 +10,13 @@ class TenantBill extends Model
         'transaction_id',
         'tenant_uid',
         'amount',
+        'status',
+        'billing_month',
         'payment_method',
         'bill_type',
         'sent_money_to',
         'note',
+        'is_admin_modified',
     ];
 }
+

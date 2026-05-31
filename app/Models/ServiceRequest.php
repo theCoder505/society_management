@@ -9,9 +9,12 @@ class ServiceRequest extends Model
     protected $fillable = [
         'service_uid',
         'from_tenant_uid',
+        'from_owner_uid',
         'to_owner_uid',
+        'to_admin',
         'title',
         'requet_details',
         'approve_status',
     ];
 }
+
