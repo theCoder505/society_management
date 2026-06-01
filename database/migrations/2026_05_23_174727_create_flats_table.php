@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('appartment_uid')->unique();
             $table->string('flatID')->unique();
             $table->string('owner_uid')->nullable();
-            $table->enum('flat_type', ['rented', 'to_rent']);
+            $table->enum('flat_type', ['rented', 'to_rent', 'to_live']);
             $table->string('tenant_uid')->nullable();
             $table->string('flat_price');
             $table->string('flat_size');

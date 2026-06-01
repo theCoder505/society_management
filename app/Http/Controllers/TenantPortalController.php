@@ -159,6 +159,27 @@ class TenantPortalController extends Controller
         return back()->with('success', 'Payment details uploaded successfully and pending approval.');
     }
 
+
+
+
+    public function deletePayment(Request $request)
+    {
+        $request->validate([
+            'id' => ['required', 'integer', 'exists:tenant_bills,id']
+        ]);
+        $bill = TenantBill::findOrFail($request->id);
+        if ($bill->tenant_uid !== $this->getTenant()->tenant_uid) {
+            abort(403, 'Unauthorized action.');
+        }
+        if ($bill->status !== 'pending') {
+            abort(403, 'Only pending bills can be deleted.');
+        }
+        $bill->delete();
+        return back()->with('success', 'Bill deleted successfully.');
+    }
+
+
+
     /**
      * Tenant Notices & Announcements.
      */

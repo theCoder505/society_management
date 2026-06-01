@@ -515,26 +515,22 @@ function ApartmentModal({ open, onClose, title, form, onSubmit, submitLabel, isC
     const { data, setData, errors, processing } = form;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [imagePreviews, setImagePreviews] = useState<{ file: File; preview: string }[]>([]);
-    const [existingImageUrls, setExistingImageUrls] = useState<string[]>(existingImages);
+    const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
 
     useEffect(() => {
-        if (!isCreate && existingImages.length > 0) {
+        if (open) {
+            // Sync existing images from prop every time the modal opens
             setExistingImageUrls(existingImages);
-        }
-    }, [existingImages, isCreate]);
-
-    useEffect(() => {
-        if (!open) {
-            // Cleanup previews when modal closes
-            imagePreviews.forEach((preview) => {
-                URL.revokeObjectURL(preview.preview);
+            // Also reset any leftover new-image previews from a previous open
+            setImagePreviews((prev) => {
+                prev.forEach((p) => URL.revokeObjectURL(p.preview));
+                return [];
             });
-            setImagePreviews([]);
-            if (!isCreate) {
-                setExistingImageUrls([]);
-            }
         }
-    }, [open, isCreate]);
+    }, [open]);
+
+
+
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);

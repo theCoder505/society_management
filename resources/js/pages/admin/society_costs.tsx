@@ -220,6 +220,7 @@ export default function SocietyCosts({ costs, developments }: Props) {
         },
         {
             header: 'Actions',
+            className: 'text-right max-w-[70px]',
             accessor: (row: SocietyCost) => (
                 <div className="flex items-center justify-end gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleEditOpen(row)}>

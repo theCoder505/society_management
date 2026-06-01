@@ -92,6 +92,7 @@ const ownerGroupedItems: GroupedNavItem[] = [
         title: 'Tenant Management',
         icon: Users,
         items: [
+            { title: 'Tenants', url: '/owner/tenants', icon: UserPlus2Icon },
             { title: 'Tenant Payments', url: '/owner/tenant-payments', icon: DollarSign },
             { title: 'Tenant Notices', url: '/owner/notices', icon: Newspaper },
         ],

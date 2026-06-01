@@ -1,10 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     ArrowRight,
     Building,
     Building2,
+    ChevronLeft,
+    ChevronRight,
     ExternalLink,
     Flame,
     Home,
@@ -13,6 +16,11 @@ import {
     Tv2,
     User,
     Wifi,
+    X,
+    ZoomIn,
+    Check,
+    ChevronDown,
+    Loader2,
 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -25,7 +33,7 @@ interface Flat {
     flatID: string;
     appartment_uid: string | null;
     apartment_name?: string | null;
-    flat_type: string;
+    flat_type: 'rented' | 'to_rent' | 'to_live';
     flat_size: number;
     flat_bhk: number;
     tot_bedrooms: number;
@@ -50,6 +58,12 @@ interface Props {
     flats: Flat[];
 }
 
+interface LightboxState {
+    images: string[];
+    index: number;
+    label: string;
+}
+
 const ddkLabel: Record<string, string> = {
     all_together: 'Combined Drawing/Dining/Kitchen',
     all_seperate: 'All Separate',
@@ -69,10 +83,279 @@ const typeLabel: Record<string, string> = {
     to_live: 'Owner Occupied',
 };
 
+// All three statuses are owner-selectable
+const statusOptions: { value: Flat['flat_type']; label: string; description: string }[] = [
+    { value: 'rented',  label: 'Rented',           description: 'Mark this flat as currently rented out' },
+    { value: 'to_rent', label: 'Available to Rent', description: 'List this flat as available for tenants' },
+    { value: 'to_live', label: 'Owner Occupied',    description: 'Mark this flat as your own residence' },
+];
+
+/* ─── Status Dropdown ────────────────────────────────────────────────── */
+
+function StatusDropdown({ flat }: { flat: Flat }) {
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [current, setCurrent] = useState<Flat['flat_type']>(flat.flat_type);
+
+    // Close on outside click
+    useEffect(() => {
+        if (!open) return;
+        const handler = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest(`[data-status-dropdown="${flat.id}"]`)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [open, flat.id]);
+
+    const handleChange = (newType: Flat['flat_type']) => {
+        if (newType === current || loading) return;
+        setOpen(false);
+        setLoading(true);
+
+        router.patch(
+            `/owner/my-flats/${flat.id}/status`,
+            { flat_type: newType },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setCurrent(newType);
+                    setLoading(false);
+                },
+                onError: () => {
+                    setLoading(false);
+                },
+            },
+        );
+    };
+
+    return (
+        <div className="relative" data-status-dropdown={flat.id}>
+            <button
+                onClick={() => setOpen((o) => !o)}
+                disabled={loading}
+                className={`
+                    inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium
+                    transition-all border cursor-pointer select-none
+                    ${typeBadge[current]}
+                    border-current/20
+                    hover:brightness-95 active:scale-95
+                    disabled:opacity-60 disabled:cursor-not-allowed
+                `}
+                title="Click to change status"
+            >
+                {loading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                    <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                )}
+                {typeLabel[current]}
+            </button>
+
+            {open && (
+                <div className="absolute left-0 top-full z-30 mt-1.5 min-w-[220px] rounded-xl border bg-popover shadow-lg dark:border-neutral-700 dark:bg-neutral-900 overflow-hidden">
+                    <p className="px-3 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Change Status
+                    </p>
+                    {statusOptions.map((opt) => (
+                        <button
+                            key={opt.value}
+                            onClick={() => handleChange(opt.value)}
+                            className={`
+                                w-full flex items-start gap-2.5 px-3 py-2.5 text-left text-sm
+                                transition-colors hover:bg-accent
+                                ${opt.value === current ? 'bg-accent/50' : ''}
+                            `}
+                        >
+                            <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${typeBadge[opt.value]}`}>
+                                {opt.value === current && <Check className="h-2.5 w-2.5" />}
+                            </div>
+                            <div>
+                                <p className="font-medium leading-tight text-foreground">{opt.label}</p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">{opt.description}</p>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ─── Lightbox ───────────────────────────────────────────────────────── */
+
+function ImageLightbox({ state, onClose }: { state: LightboxState; onClose: () => void }) {
+    const [current, setCurrent] = useState(state.index);
+    const [fading, setFading] = useState(false);
+    const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null);
+    const total = state.images.length;
+
+    const go = useCallback(
+        (dir: 'prev' | 'next') => {
+            if (fading) return;
+            setSlideDir(dir === 'next' ? 'left' : 'right');
+            setFading(true);
+            setTimeout(() => {
+                setCurrent((c) => (dir === 'next' ? (c + 1) % total : (c - 1 + total) % total));
+                setSlideDir(null);
+                setFading(false);
+            }, 200);
+        },
+        [fading, total],
+    );
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowRight') go('next');
+            else if (e.key === 'ArrowLeft') go('prev');
+            else if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [go, onClose]);
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, []);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex flex-col bg-black/70"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+        >
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-5 py-4">
+                <div>
+                    <span className="text-white font-semibold text-base leading-tight">{state.label}</span>
+                    <p className="text-neutral-400 text-xs mt-0.5">
+                        {current + 1} / {total}
+                    </p>
+                </div>
+                <button
+                    onClick={onClose}
+                    className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                    <X className="h-5 w-5" />
+                </button>
+            </div>
+
+            {/* Main image */}
+            <div className="relative flex flex-1 items-center justify-center overflow-hidden px-16">
+                {total > 1 && (
+                    <button
+                        onClick={() => go('prev')}
+                        className="absolute left-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-sm transition-all hover:bg-white/15 hover:scale-105 active:scale-95"
+                    >
+                        <ChevronLeft className="h-5 w-5" />
+                    </button>
+                )}
+
+                <div
+                    style={{
+                        transition: fading ? 'opacity 0.2s ease, transform 0.2s ease' : 'none',
+                        opacity: fading ? 0 : 1,
+                        transform: fading
+                            ? `translateX(${slideDir === 'left' ? '-28px' : '28px'})`
+                            : 'translateX(0)',
+                    }}
+                    className="flex h-full w-full items-center justify-center"
+                >
+                    <img
+                        key={current}
+                        src={state.images[current]}
+                        alt={`${state.label} — photo ${current + 1}`}
+                        className="max-h-full max-w-full rounded-xl object-contain shadow-2xl"
+                        style={{ maxHeight: 'calc(100vh - 200px)' }}
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                        }}
+                    />
+                </div>
+
+                {total > 1 && (
+                    <button
+                        onClick={() => go('next')}
+                        className="absolute right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-sm transition-all hover:bg-white/15 hover:scale-105 active:scale-95"
+                    >
+                        <ChevronRight className="h-5 w-5" />
+                    </button>
+                )}
+            </div>
+
+            {/* Thumbnail strip */}
+            {total > 1 && (
+                <div className="flex items-center justify-center gap-2 px-4 py-5 overflow-x-auto">
+                    {state.images.map((src, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setCurrent(idx)}
+                            className="shrink-0 overflow-hidden rounded-lg transition-all"
+                            style={{
+                                width: 56,
+                                height: 40,
+                                outline: idx === current ? '2px solid white' : '2px solid transparent',
+                                outlineOffset: 2,
+                                opacity: idx === current ? 1 : 0.45,
+                                transform: idx === current ? 'scale(1.08)' : 'scale(1)',
+                                transition: 'all 0.18s ease',
+                            }}
+                        >
+                            <img
+                                src={src}
+                                alt={`thumb ${idx + 1}`}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                                }}
+                            />
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Dot indicators */}
+            {total > 1 && total <= 8 && (
+                <div className="flex justify-center gap-1.5 pb-4">
+                    {state.images.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setCurrent(idx)}
+                            className="rounded-full transition-all"
+                            style={{
+                                width: idx === current ? 20 : 6,
+                                height: 6,
+                                background: idx === current ? 'white' : 'rgba(255,255,255,0.3)',
+                                transition: 'all 0.2s ease',
+                            }}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ─── Main Page ──────────────────────────────────────────────────────── */
+
 export default function OwnerMyFlats({ flats }: Props) {
+    const [lightbox, setLightbox] = useState<LightboxState | null>(null);
+
+    const openLightbox = (images: string[], index: number, label: string) => {
+        setLightbox({ images, index, label });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="My Flats" />
+
+            {lightbox && <ImageLightbox state={lightbox} onClose={() => setLightbox(null)} />}
 
             <div className="flex flex-col gap-6 p-4 md:p-6">
                 {/* Header */}
@@ -91,7 +374,9 @@ export default function OwnerMyFlats({ flats }: Props) {
                 {flats.length === 0 ? (
                     <div className="bg-card rounded-xl border p-12 text-center dark:border-neutral-800">
                         <Home className="text-muted-foreground mx-auto mb-3 h-10 w-10 opacity-40" />
-                        <p className="text-muted-foreground text-sm">No flats are registered under your ownership yet.</p>
+                        <p className="text-muted-foreground text-sm">
+                            No flats are registered under your ownership yet.
+                        </p>
                     </div>
                 ) : (
                     <div className="grid gap-6 lg:grid-cols-2">
@@ -99,27 +384,77 @@ export default function OwnerMyFlats({ flats }: Props) {
                             const images = flat.flat_images
                                 ? flat.flat_images.split(',').filter((i) => i.trim())
                                 : [];
+                            const label = `Flat ${flat.flatID}`;
 
                             return (
                                 <div
                                     key={flat.id}
                                     className="bg-card overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800"
                                 >
-                                    {/* Image */}
+                                    {/* Image / Hero */}
                                     {images.length > 0 ? (
-                                        <div className="relative h-48 overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+                                        <div
+                                            className="group relative h-48 cursor-pointer overflow-hidden bg-neutral-100 dark:bg-neutral-900"
+                                            onClick={() => openLightbox(images, 0, label)}
+                                        >
                                             <img
                                                 src={images[0]}
-                                                alt={`Flat ${flat.flatID}`}
-                                                className="h-full w-full object-cover"
+                                                alt={label}
+                                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).style.display = 'none';
                                                 }}
                                             />
+
+                                            {/* Hover overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover:bg-black/30">
+                                                <div className="flex items-center gap-2 rounded-full bg-white/0 px-4 py-2 text-white opacity-0 transition-all duration-200 group-hover:bg-white/20 group-hover:opacity-100 backdrop-blur-sm">
+                                                    <ZoomIn className="h-4 w-4" />
+                                                    <span className="text-sm font-medium">View Photos</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Photo count badge */}
                                             {images.length > 1 && (
-                                                <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
-                                                    +{images.length - 1} more
+                                                <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white backdrop-blur-sm">
+                                                    {images.length} photos
                                                 </span>
+                                            )}
+
+                                            {/* Thumbnail previews */}
+                                            {images.length > 1 && (
+                                                <div className="absolute bottom-2 left-2 flex gap-1">
+                                                    {images.slice(1, 4).map((src, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openLightbox(images, idx + 1, label);
+                                                            }}
+                                                            className="h-9 w-9 overflow-hidden rounded-md border-2 border-white/40 opacity-80 transition-all hover:opacity-100 hover:border-white hover:scale-105"
+                                                        >
+                                                            <img
+                                                                src={src}
+                                                                alt={`thumb ${idx + 2}`}
+                                                                className="h-full w-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                                }}
+                                                            />
+                                                        </button>
+                                                    ))}
+                                                    {images.length > 4 && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openLightbox(images, 4, label);
+                                                            }}
+                                                            className="flex h-9 w-9 items-center justify-center rounded-md border-2 border-white/40 bg-black/50 text-xs font-bold text-white backdrop-blur-sm hover:bg-black/70"
+                                                        >
+                                                            +{images.length - 4}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     ) : (
@@ -139,11 +474,8 @@ export default function OwnerMyFlats({ flats }: Props) {
                                                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
                                                         {flat.flat_bhk} BHK
                                                     </span>
-                                                    <span
-                                                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeBadge[flat.flat_type] ?? ''}`}
-                                                    >
-                                                        {typeLabel[flat.flat_type] ?? flat.flat_type}
-                                                    </span>
+                                                    {/* ── Status Dropdown ── */}
+                                                    <StatusDropdown flat={flat} />
                                                 </div>
                                                 {flat.apartment_name && (
                                                     <p className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
@@ -198,24 +530,33 @@ export default function OwnerMyFlats({ flats }: Props) {
                                         <div className="mb-4 grid grid-cols-3 gap-3">
                                             <div className="rounded-lg bg-muted/50 p-2.5 text-center">
                                                 <p className="text-xs text-muted-foreground">Size</p>
-                                                <p className="mt-0.5 text-sm font-semibold text-foreground">{flat.flat_size} sqft</p>
+                                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                                    {flat.flat_size} sqft
+                                                </p>
                                             </div>
                                             <div className="rounded-lg bg-muted/50 p-2.5 text-center">
                                                 <p className="text-xs text-muted-foreground">Bedrooms</p>
-                                                <p className="mt-0.5 text-sm font-semibold text-foreground">{flat.tot_bedrooms}</p>
+                                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                                    {flat.tot_bedrooms}
+                                                </p>
                                             </div>
                                             <div className="rounded-lg bg-muted/50 p-2.5 text-center">
                                                 <p className="text-xs text-muted-foreground">Washrooms</p>
-                                                <p className="mt-0.5 text-sm font-semibold text-foreground">{flat.tot_washrooms}</p>
+                                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                                    {flat.tot_washrooms}
+                                                </p>
                                             </div>
                                             <div className="rounded-lg bg-muted/50 p-2.5 text-center">
                                                 <p className="text-xs text-muted-foreground">Balconies</p>
-                                                <p className="mt-0.5 text-sm font-semibold text-foreground">{flat.tot_balconies}</p>
+                                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                                    {flat.tot_balconies}
+                                                </p>
                                             </div>
                                             <div className="col-span-2 rounded-lg bg-muted/50 p-2.5">
                                                 <p className="text-xs text-muted-foreground">Layout</p>
                                                 <p className="mt-0.5 text-xs font-medium text-foreground">
-                                                    {ddkLabel[flat.drawing_dyning_kitchen] ?? flat.drawing_dyning_kitchen}
+                                                    {ddkLabel[flat.drawing_dyning_kitchen] ??
+                                                        flat.drawing_dyning_kitchen}
                                                 </p>
                                             </div>
                                         </div>

@@ -1,23 +1,22 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     ArrowRight,
-    BadgeCheck,
     Building,
     Building2,
+    ChevronLeft,
+    ChevronRight,
+    ExternalLink,
+    Flame,
     Home,
+    Phone,
+    StickyNote,
     Tv2,
     Wifi,
-    Wind,
-    Flame,
-    Phone,
-    SquareStack,
-    BedDouble,
-    ShowerHead,
-    Rows3,
-    StickyNote,
-    ExternalLink,
+    X,
+    ZoomIn,
 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -53,6 +52,12 @@ interface Props {
     flats: Flat[];
 }
 
+interface LightboxState {
+    images: string[];
+    index: number;
+    label: string;
+}
+
 const ddkLabel: Record<string, string> = {
     all_together: 'Combined Drawing/Dining/Kitchen',
     all_seperate: 'All Separate',
@@ -60,18 +65,131 @@ const ddkLabel: Record<string, string> = {
     seperate_drawing: 'Separate Drawing',
 };
 
+/* ─── Lightbox ───────────────────────────────────────────────────────── */
+
+function ImageLightbox({ state, onClose }: { state: LightboxState; onClose: () => void }) {
+    const [current, setCurrent] = useState(state.index);
+    const [fading, setFading] = useState(false);
+    const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null);
+    const total = state.images.length;
+
+    const go = useCallback(
+        (dir: 'prev' | 'next') => {
+            if (fading) return;
+            setSlideDir(dir === 'next' ? 'left' : 'right');
+            setFading(true);
+            setTimeout(() => {
+                setCurrent((c) => (dir === 'next' ? (c + 1) % total : (c - 1 + total) % total));
+                setSlideDir(null);
+                setFading(false);
+            }, 200);
+        },
+        [fading, total],
+    );
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowRight') go('next');
+            else if (e.key === 'ArrowLeft') go('prev');
+            else if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [go, onClose]);
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex flex-col bg-black/70"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+            <div className="flex items-center justify-between px-5 py-4">
+                <div>
+                    <span className="text-white font-semibold text-base leading-tight">{state.label}</span>
+                    <p className="text-neutral-400 text-xs mt-0.5">{current + 1} / {total}</p>
+                </div>
+                <button onClick={onClose} className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white">
+                    <X className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="relative flex flex-1 items-center justify-center overflow-hidden px-16">
+                {total > 1 && (
+                    <button onClick={() => go('prev')} className="absolute left-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-sm transition-all hover:bg-white/15 hover:scale-105 active:scale-95">
+                        <ChevronLeft className="h-5 w-5" />
+                    </button>
+                )}
+                <div
+                    style={{
+                        transition: fading ? 'opacity 0.2s ease, transform 0.2s ease' : 'none',
+                        opacity: fading ? 0 : 1,
+                        transform: fading ? `translateX(${slideDir === 'left' ? '-28px' : '28px'})` : 'translateX(0)',
+                    }}
+                    className="flex h-full w-full items-center justify-center"
+                >
+                    <img
+                        key={current}
+                        src={state.images[current]}
+                        alt={`${state.label} — photo ${current + 1}`}
+                        className="max-h-full max-w-full rounded-xl object-contain shadow-2xl"
+                        style={{ maxHeight: 'calc(100vh - 200px)' }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.jpg'; }}
+                    />
+                </div>
+                {total > 1 && (
+                    <button onClick={() => go('next')} className="absolute right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-sm transition-all hover:bg-white/15 hover:scale-105 active:scale-95">
+                        <ChevronRight className="h-5 w-5" />
+                    </button>
+                )}
+            </div>
+
+            {total > 1 && (
+                <div className="flex items-center justify-center gap-2 px-4 py-5 overflow-x-auto">
+                    {state.images.map((src, idx) => (
+                        <button key={idx} onClick={() => setCurrent(idx)} className="shrink-0 overflow-hidden rounded-lg transition-all"
+                            style={{ width: 56, height: 40, outline: idx === current ? '2px solid white' : '2px solid transparent', outlineOffset: 2, opacity: idx === current ? 1 : 0.45, transform: idx === current ? 'scale(1.08)' : 'scale(1)', transition: 'all 0.18s ease' }}>
+                            <img src={src} alt={`thumb ${idx + 1}`} className="h-full w-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.jpg'; }} />
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {total > 1 && total <= 8 && (
+                <div className="flex justify-center gap-1.5 pb-4">
+                    {state.images.map((_, idx) => (
+                        <button key={idx} onClick={() => setCurrent(idx)} className="rounded-full transition-all"
+                            style={{ width: idx === current ? 20 : 6, height: 6, background: idx === current ? 'white' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s ease' }} />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ─── Main Page ──────────────────────────────────────────────────────── */
+
 export default function TenantMyFlats({ flats }: Props) {
+    const [lightbox, setLightbox] = useState<LightboxState | null>(null);
+
+    const openLightbox = (images: string[], index: number, label: string) => {
+        setLightbox({ images, index, label });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="My Flats" />
 
+            {lightbox && <ImageLightbox state={lightbox} onClose={() => setLightbox(null)} />}
+
             <div className="flex flex-col gap-6 p-4 md:p-6">
-                {/* Header */}
                 <div>
                     <h1 className="text-foreground text-2xl font-bold tracking-tight">My Rented Flats</h1>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                        Details of all flats currently assigned to your account
-                    </p>
+                    <p className="text-muted-foreground mt-1 text-sm">Details of all flats currently assigned to your account</p>
                 </div>
 
                 {flats.length === 0 ? (
@@ -85,27 +203,50 @@ export default function TenantMyFlats({ flats }: Props) {
                             const images = flat.flat_images
                                 ? flat.flat_images.split(',').filter((i) => i.trim())
                                 : [];
+                            const label = `Flat ${flat.flatID}`;
 
                             return (
-                                <div
-                                    key={flat.id}
-                                    className="bg-card overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800"
-                                >
-                                    {/* Image Gallery */}
+                                <div key={flat.id} className="bg-card overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800">
                                     {images.length > 0 ? (
-                                        <div className="relative h-48 overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+                                        <div
+                                            className="group relative h-48 cursor-pointer overflow-hidden bg-neutral-100 dark:bg-neutral-900"
+                                            onClick={() => openLightbox(images, 0, label)}
+                                        >
                                             <img
                                                 src={images[0]}
-                                                alt={`Flat ${flat.flatID}`}
-                                                className="h-full w-full object-cover"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                }}
+                                                alt={label}
+                                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                             />
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover:bg-black/30">
+                                                <div className="flex items-center gap-2 rounded-full bg-white/0 px-4 py-2 text-white opacity-0 transition-all duration-200 group-hover:bg-white/20 group-hover:opacity-100 backdrop-blur-sm">
+                                                    <ZoomIn className="h-4 w-4" />
+                                                    <span className="text-sm font-medium">View Photos</span>
+                                                </div>
+                                            </div>
                                             {images.length > 1 && (
-                                                <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
-                                                    +{images.length - 1} more
+                                                <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white backdrop-blur-sm">
+                                                    {images.length} photos
                                                 </span>
+                                            )}
+                                            {images.length > 1 && (
+                                                <div className="absolute bottom-2 left-2 flex gap-1">
+                                                    {images.slice(1, 4).map((src, idx) => (
+                                                        <button key={idx}
+                                                            onClick={(e) => { e.stopPropagation(); openLightbox(images, idx + 1, label); }}
+                                                            className="h-9 w-9 overflow-hidden rounded-md border-2 border-white/40 opacity-80 transition-all hover:opacity-100 hover:border-white hover:scale-105">
+                                                            <img src={src} alt={`thumb ${idx + 2}`} className="h-full w-full object-cover"
+                                                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                                        </button>
+                                                    ))}
+                                                    {images.length > 4 && (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); openLightbox(images, 4, label); }}
+                                                            className="flex h-9 w-9 items-center justify-center rounded-md border-2 border-white/40 bg-black/50 text-xs font-bold text-white backdrop-blur-sm hover:bg-black/70">
+                                                            +{images.length - 4}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     ) : (
@@ -115,13 +256,10 @@ export default function TenantMyFlats({ flats }: Props) {
                                     )}
 
                                     <div className="p-5">
-                                        {/* Title Row */}
                                         <div className="mb-4 flex items-start justify-between gap-2">
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-mono text-base font-bold text-foreground">
-                                                        {flat.flatID}
-                                                    </span>
+                                                    <span className="font-mono text-base font-bold text-foreground">{flat.flatID}</span>
                                                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
                                                         {flat.flat_bhk} BHK
                                                     </span>
@@ -131,10 +269,7 @@ export default function TenantMyFlats({ flats }: Props) {
                                                         <Building className="h-3 w-3" />
                                                         {flat.apartment_name}
                                                         {flat.appartment_uid && (
-                                                            <Link
-                                                                href="/tenant/my-apartment"
-                                                                className="ml-1 font-mono text-primary underline-offset-2 hover:underline"
-                                                            >
+                                                            <Link href="/tenant/my-apartment" className="ml-1 font-mono text-primary underline-offset-2 hover:underline">
                                                                 ({flat.appartment_uid})
                                                             </Link>
                                                         )}
@@ -144,14 +279,11 @@ export default function TenantMyFlats({ flats }: Props) {
                                             {flat.rent_price && (
                                                 <div className="text-right">
                                                     <p className="text-xs text-muted-foreground">Monthly Rent</p>
-                                                    <p className="text-lg font-bold text-primary">
-                                                        ৳{Number(flat.rent_price).toLocaleString('en-IN')}
-                                                    </p>
+                                                    <p className="text-lg font-bold text-primary">৳{Number(flat.rent_price).toLocaleString('en-IN')}</p>
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Stats Grid */}
                                         <div className="mb-4 grid grid-cols-3 gap-3">
                                             <div className="rounded-lg bg-muted/50 p-2.5 text-center">
                                                 <p className="text-xs text-muted-foreground">Size</p>
@@ -177,11 +309,8 @@ export default function TenantMyFlats({ flats }: Props) {
                                             </div>
                                         </div>
 
-                                        {/* Amenities */}
                                         <div className="mb-4">
-                                            <p className="mb-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                                Amenities
-                                            </p>
+                                            <p className="mb-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">Amenities</p>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {(
                                                     [
@@ -192,14 +321,8 @@ export default function TenantMyFlats({ flats }: Props) {
                                                         { key: 'lift', label: 'Lift', icon: ArrowRight },
                                                     ] as const
                                                 ).map(({ key, label, icon: Icon }) => (
-                                                    <span
-                                                        key={key}
-                                                        className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                            flat[key] === 'yes'
-                                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
-                                                                : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500 line-through'
-                                                        }`}
-                                                    >
+                                                    <span key={key}
+                                                        className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${flat[key] === 'yes' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500 line-through'}`}>
                                                         <Icon className="h-3 w-3" />
                                                         {label}
                                                     </span>
@@ -207,20 +330,14 @@ export default function TenantMyFlats({ flats }: Props) {
                                             </div>
                                         </div>
 
-                                        {/* 3D Video Link */}
                                         {flat.flat_3d_video && (
-                                            <a
-                                                href={flat.flat_3d_video}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="mb-4 flex items-center gap-1.5 text-xs text-primary hover:underline"
-                                            >
+                                            <a href={flat.flat_3d_video} target="_blank" rel="noopener noreferrer"
+                                                className="mb-4 flex items-center gap-1.5 text-xs text-primary hover:underline">
                                                 <ExternalLink className="h-3 w-3" />
                                                 View 3D Tour
                                             </a>
                                         )}
 
-                                        {/* Note */}
                                         {flat.note && (
                                             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
                                                 <p className="flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-300">

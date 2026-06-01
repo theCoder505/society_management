@@ -10,6 +10,7 @@ use App\Models\Notice;
 use App\Models\Announcement;
 use App\Models\ServiceRequest;
 use App\Mail\OtpMail;
+use App\Models\Appartment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -49,7 +50,7 @@ class OwnerPortalController extends Controller
     public function dashboard()
     {
         $owner = $this->getOwner();
-        
+
         // Flats owned by this owner
         $flats = Flat::where('owner_uid', $owner->owner_uid)->get();
         $totalFlats = $flats->count();
@@ -93,7 +94,7 @@ class OwnerPortalController extends Controller
     public function myFlats()
     {
         $owner = $this->getOwner();
-        
+
         // Get all flats owned by this owner
         $flats = Flat::where('owner_uid', $owner->owner_uid)->get();
 
@@ -101,7 +102,7 @@ class OwnerPortalController extends Controller
         $flats = $flats->map(function ($flat) {
             // Get apartment name
             if ($flat->appartment_uid) {
-                $apt = \App\Models\Appartment::where('appartment_uid', $flat->appartment_uid)->first();
+                $apt = Appartment::where('appartment_uid', $flat->appartment_uid)->first();
                 $flat->apartment_name = $apt ? $apt->appartment_name : null;
             } else {
                 $flat->apartment_name = null;
@@ -109,7 +110,7 @@ class OwnerPortalController extends Controller
 
             // Get tenant name if rented
             if ($flat->tenant_uid) {
-                $tenant = \App\Models\Tenant::where('tenant_uid', $flat->tenant_uid)->first();
+                $tenant = Tenant::where('tenant_uid', $flat->tenant_uid)->first();
                 $flat->tenant_name = $tenant ? $tenant->name : null;
             } else {
                 $flat->tenant_name = null;
@@ -123,13 +124,36 @@ class OwnerPortalController extends Controller
         ]);
     }
 
+
+
+
+    public function updateFlatStatus(Request $request, Flat $flat)
+    {
+        $owner = $this->getOwner();
+        if ($flat->owner_uid !== $owner->owner_uid) {
+            abort(403, 'You do not own this flat.');
+        }
+        $validated = $request->validate([
+            'flat_type' => ['required', 'in:rented,to_rent,to_live'],
+        ]);
+        $flat->update(['flat_type' => $validated['flat_type']]);
+        return back();
+    }
+
+
+
+
+
+
+
+
     /**
      * Owner "My Apartments" — read-only view of the apartment building(s) where their flats are located.
      */
     public function myApartments()
     {
         $owner = $this->getOwner();
-        
+
         // Get unique apartment UIDs from the owner's flats
         $appartmentUids = Flat::where('owner_uid', $owner->owner_uid)
             ->whereNotNull('appartment_uid')

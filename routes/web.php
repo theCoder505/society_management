@@ -103,7 +103,15 @@ Route::middleware(['role:owner'])->prefix('/owner')->name('owner.')->group(funct
     Route::get('/dashboard', [OwnerPortalController::class, 'dashboard'])->name('dashboard');
 
     Route::get('/my-flats', [OwnerPortalController::class, 'myFlats'])->name('my-flats');
+    Route::patch('/my-flats/{flat}/status', [OwnerPortalController::class, 'updateFlatStatus'])->name('my-flats.update-status');
+
     Route::get('/my-apartments', [OwnerPortalController::class, 'myApartments'])->name('my-apartments');
+
+    Route::get('/tenants', [TenantsController::class, 'all_tenants'])->name('owners.tenants.index');
+    Route::post('/tenants/create', [TenantsController::class, 'create_tenant'])->name('owners.tenants.create');
+    Route::get('/tenants/{owner_uid}', [TenantsController::class, 'spec_tenant'])->name('owners.tenants.read');
+    Route::post('/tenants/update', [TenantsController::class, 'update_tenant'])->name('owners.tenants.update');
+    Route::delete('/tenants/delete', [TenantsController::class, 'delete_tenant'])->name('owners.tenants.delete');
 
     Route::get('/tenant-payments', [OwnerPortalController::class, 'tenantPayments'])->name('tenant-payments');
     Route::post('/tenant-payments/verify', [OwnerPortalController::class, 'verifyPayment'])->name('tenant-payments.verify');
@@ -139,6 +147,7 @@ Route::middleware(['role:tenant'])->prefix('/tenant')->name('tenant.')->group(fu
 
     Route::get('/payments', [TenantPortalController::class, 'payments'])->name('payments');
     Route::post('/payments/upload', [TenantPortalController::class, 'uploadPayment'])->name('payments.upload');
+    Route::delete('/payments/delete', [TenantPortalController::class, 'deletePayment'])->name('payments.delete');
 
     Route::get('/notices', [TenantPortalController::class, 'notices'])->name('notices');
     Route::post('/notices/comply', [TenantPortalController::class, 'complyNotice'])->name('notices.comply');

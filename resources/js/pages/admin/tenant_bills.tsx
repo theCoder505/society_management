@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { AlertCircle, DollarSign, Pencil, Plus, Trash2 } from 'lucide-react';
+import { DollarSign, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import FlashMessage from '../FlashMessage';
 
@@ -46,7 +46,7 @@ interface TenantBill {
 interface Tenant {
     tenant_uid: string;
     name: string;
-    renting_flats: string | string[]; // can be JSON
+    renting_flats: string | string[];
 }
 
 interface Props {
@@ -55,7 +55,6 @@ interface Props {
 }
 
 interface BillFormData {
-    id?: number;
     tenant_uid: string;
     amount: string;
     status: string;
@@ -72,7 +71,7 @@ const emptyForm = (): BillFormData => ({
     tenant_uid: '',
     amount: '',
     status: 'pending',
-    billing_month: new Date().toISOString().substring(0, 7), // YYYY-MM
+    billing_month: new Date().toISOString().substring(0, 7),
     payment_method: 'cash',
     bill_type: 'monthly',
     sent_money_to: 'flat_owner',
@@ -80,16 +79,99 @@ const emptyForm = (): BillFormData => ({
     transaction_id: '',
 });
 
+const sentMoneyToLabels: Record<string, string> = {
+    flat_owner: 'Flat Owner',
+    guard: 'Security Guard',
+    society_lead: 'Society Lead',
+    other: 'Other',
+};
+
+const paymentMethods: Record<string, string> = {
+    cash: 'Cash',
+    bank_transfer: 'Bank Transfer',
+    cheque: 'Cheque',
+    bkash: 'bKash',
+    nagad: 'Nagad',
+    rocket: 'Rocket',
+    card: 'Card',
+    other: 'Other',
+};
+
+const billTypes: Record<string, string> = {
+    monthly: 'Rent (Monthly)',
+    electricity: 'Electricity',
+    water: 'Water',
+    gas: 'Gas',
+    wifi: 'WiFi',
+    dish: 'Satellite Dish',
+    garage: 'Garage Cost',
+    utility: 'Utility',
+    other: 'Other',
+};
+
+const statusColors: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+    accepted: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    denied: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+};
+
+// ─── Inline Status Select ────────────────────────────────────────────────────
+function InlineStatusSelect({ bill }: { bill: TenantBill }) {
+    const [updating, setUpdating] = useState(false);
+
+    const handleStatusChange = (newStatus: string) => {
+        if (newStatus === bill.status) return;
+        setUpdating(true);
+        router.put(
+            route('costs.tenants.update'),
+            {
+                id: bill.id,
+                tenant_uid: bill.tenant_uid,
+                amount: bill.amount,
+                status: newStatus,
+                billing_month: bill.billing_month,
+                payment_method: bill.payment_method,
+                bill_type: bill.bill_type,
+                sent_money_to: bill.sent_money_to,
+                note: bill.note ?? '',
+                transaction_id: bill.transaction_id,
+            },
+            {
+                preserveScroll: true,
+                onFinish: () => setUpdating(false),
+            },
+        );
+    };
+
+    return (
+        <Select value={bill.status} onValueChange={handleStatusChange} disabled={updating}>
+            <SelectTrigger
+                className={`h-7 w-28 rounded-full border-0 px-2.5 text-xs font-semibold shadow-none focus:ring-1 ${statusColors[bill.status]} ${updating ? 'opacity-60' : ''}`}
+            >
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="pending">
+                    <span className="text-yellow-700 dark:text-yellow-300">Pending</span>
+                </SelectItem>
+                <SelectItem value="accepted">
+                    <span className="text-green-700 dark:text-green-300">Accepted</span>
+                </SelectItem>
+                <SelectItem value="denied">
+                    <span className="text-red-700 dark:text-red-300">Denied</span>
+                </SelectItem>
+            </SelectContent>
+        </Select>
+    );
+}
+
 export default function TenantBills({ bills, tenants }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [selectedBill, setSelectedBill] = useState<TenantBill | null>(null);
 
     const createForm = useForm<BillFormData>(emptyForm());
-    const editForm = useForm<BillFormData>(emptyForm());
 
-    // Map tenant_uid to name
     const tenantNameMap = useMemo(() => {
         const map: Record<string, string> = {};
         tenants.forEach((t) => {
@@ -98,7 +180,6 @@ export default function TenantBills({ bills, tenants }: Props) {
         return map;
     }, [tenants]);
 
-    // Handle Create Submission
     const handleCreate = () => {
         createForm.post(route('costs.tenants.create'), {
             onSuccess: () => {
@@ -108,35 +189,6 @@ export default function TenantBills({ bills, tenants }: Props) {
         });
     };
 
-    // Open Edit Modal
-    const handleEditOpen = (bill: TenantBill) => {
-        setSelectedBill(bill);
-        editForm.setData({
-            id: bill.id,
-            tenant_uid: bill.tenant_uid,
-            amount: bill.amount,
-            status: bill.status,
-            billing_month: bill.billing_month || '',
-            payment_method: bill.payment_method,
-            bill_type: bill.bill_type,
-            sent_money_to: bill.sent_money_to,
-            note: bill.note || '',
-            transaction_id: bill.transaction_id,
-        });
-        setShowEditModal(true);
-    };
-
-    // Handle Edit Submission
-    const handleUpdate = () => {
-        editForm.put(route('costs.tenants.update'), {
-            onSuccess: () => {
-                setShowEditModal(false);
-                editForm.reset();
-            },
-        });
-    };
-
-    // Handle Delete
     const handleDelete = () => {
         if (!selectedBill) return;
         router.delete(route('costs.tenants.delete'), {
@@ -148,44 +200,6 @@ export default function TenantBills({ bills, tenants }: Props) {
         });
     };
 
-    // Status Styling
-    const statusColors: Record<string, string> = {
-        pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-        accepted: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-        denied: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-    };
-
-    const paymentMethods: Record<string, string> = {
-        cash: 'Cash',
-        bank_transfer: 'Bank Transfer',
-        cheque: 'Cheque',
-        bkash: 'bKash',
-        nagad: 'Nagad',
-        rocket: 'Rocket',
-        card: 'Card',
-        other: 'Other',
-    };
-
-    const billTypes: Record<string, string> = {
-        monthly: 'Rent (Monthly)',
-        electricity: 'Electricity',
-        water: 'Water',
-        gas: 'Gas',
-        wifi: 'WiFi',
-        dish: 'Satellite Dish',
-        garage: 'Garage Cost',
-        utility: 'Utility',
-        other: 'Other',
-    };
-
-    const sentMoneyTo: Record<string, string> = {
-        flat_owner: 'Flat Owner',
-        guard: 'Guard',
-        society_lead: 'Society Lead',
-        other: 'Other',
-    };
-
-    // Table columns
     const columns = [
         {
             header: 'Transaction ID',
@@ -203,7 +217,7 @@ export default function TenantBills({ bills, tenants }: Props) {
             sortKey: 'transaction_id' as keyof TenantBill,
         },
         {
-            header: 'Tenant Name',
+            header: 'Tenant',
             accessor: (row: TenantBill) => (
                 <div>
                     <p className="text-foreground font-medium">{tenantNameMap[row.tenant_uid] || 'Unknown Tenant'}</p>
@@ -224,12 +238,16 @@ export default function TenantBills({ bills, tenants }: Props) {
         },
         {
             header: 'Bill Type',
-            accessor: (row: TenantBill) => <span className="text-foreground text-sm font-medium">{billTypes[row.bill_type] || row.bill_type}</span>,
+            accessor: (row: TenantBill) => (
+                <span className="text-foreground text-sm font-medium">{billTypes[row.bill_type] || row.bill_type}</span>
+            ),
         },
         {
             header: 'Amount',
             accessor: (row: TenantBill) => (
-                <span className="text-foreground font-medium">৳{parseFloat(row.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span className="text-foreground font-medium">
+                    ৳{parseFloat(row.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </span>
             ),
             sortable: true,
             sortKey: 'amount' as keyof TenantBill,
@@ -241,26 +259,37 @@ export default function TenantBills({ bills, tenants }: Props) {
             ),
         },
         {
-            header: 'Status',
+            header: 'Sent To',
             accessor: (row: TenantBill) => (
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColors[row.status]}`}>
-                    {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
-                </span>
+                <span className="text-foreground text-sm">{sentMoneyToLabels[row.sent_money_to] || row.sent_money_to}</span>
             ),
+        },
+        {
+            header: 'Notes',
+            accessor: (row: TenantBill) =>
+                row.note ? (
+                    <span className="text-foreground max-w-[160px] truncate text-sm" title={row.note}>
+                        {row.note}
+                    </span>
+                ) : (
+                    <span className="text-muted-foreground italic text-xs">—</span>
+                ),
+        },
+        {
+            header: 'Status',
+            accessor: (row: TenantBill) => <InlineStatusSelect bill={row} />,
             sortable: true,
             sortKey: 'status' as keyof TenantBill,
         },
         {
             header: 'Actions',
+            className: 'max-w-[50px] text-right',
             accessor: (row: TenantBill) => (
-                <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditOpen(row)}>
-                        <Pencil className="text-muted-foreground h-4 w-4" />
-                    </Button>
+                <div className="flex items-center justify-end">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive max-w-[50px]"
                         onClick={() => {
                             setSelectedBill(row);
                             setShowDeleteDialog(true);
@@ -273,7 +302,6 @@ export default function TenantBills({ bills, tenants }: Props) {
         },
     ];
 
-    // Format data for search indexing
     const tableData = useMemo(() => {
         return bills.map((bill) => ({
             ...bill,
@@ -334,24 +362,6 @@ export default function TenantBills({ bills, tenants }: Props) {
                 tenants={tenants}
             />
 
-            {/* Edit Payment Modal */}
-            <BillModal
-                open={showEditModal}
-                onClose={() => {
-                    setShowEditModal(false);
-                    editForm.reset();
-                }}
-                title="Edit Billing Record"
-                formData={editForm.data}
-                setData={editForm.setData}
-                errors={editForm.errors}
-                processing={editForm.processing}
-                onSubmit={handleUpdate}
-                submitLabel="Save Changes"
-                tenants={tenants}
-                isEdit={true}
-            />
-
             {/* Delete Alert */}
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent className="border border-red-500 bg-red-50 dark:border-red-900 dark:bg-red-950/20">
@@ -359,8 +369,7 @@ export default function TenantBills({ bills, tenants }: Props) {
                         <AlertDialogTitle className="text-red-700 dark:text-red-400">Delete Billing Entry</AlertDialogTitle>
                         <AlertDialogDescription className="text-red-600/80 dark:text-red-400/80">
                             Are you sure you want to delete this billing entry{' '}
-                            <strong>({selectedBill ? selectedBill.transaction_id : ''})</strong>? This action
-                            cannot be undone.
+                            <strong>({selectedBill ? selectedBill.transaction_id : ''})</strong>? This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -378,7 +387,7 @@ export default function TenantBills({ bills, tenants }: Props) {
     );
 }
 
-// ─── Bill Modal Component ────────────────────────────────────────────────────────
+// ─── Bill Modal Component (Create only) ─────────────────────────────────────
 interface BillModalProps {
     open: boolean;
     onClose: () => void;
@@ -390,17 +399,11 @@ interface BillModalProps {
     onSubmit: () => void;
     submitLabel: string;
     tenants: Tenant[];
-    isEdit?: boolean;
 }
 
-function BillModal({ open, onClose, title, formData, setData, errors, processing, onSubmit, submitLabel, tenants, isEdit = false }: BillModalProps) {
+function BillModal({ open, onClose, title, formData, setData, errors, processing, onSubmit, submitLabel, tenants }: BillModalProps) {
     return (
-        <Dialog
-            open={open}
-            onOpenChange={(v) => {
-                if (!v) onClose();
-            }}
-        >
+        <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
             <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-y-auto dark:border-neutral-800">
                 <DialogHeader>
                     <DialogTitle className="text-foreground flex items-center gap-2">
@@ -550,14 +553,14 @@ function BillModal({ open, onClose, title, formData, setData, errors, processing
                         </div>
                     </div>
 
-                    {/* Transaction ID (Visible / editable in Edit, optional in Create) */}
+                    {/* Transaction ID */}
                     <div className="grid gap-1.5">
-                        <Label htmlFor="transaction_id">Transaction ID {isEdit && <span className="text-destructive">*</span>}</Label>
+                        <Label htmlFor="transaction_id">Transaction ID</Label>
                         <Input
                             id="transaction_id"
                             value={formData.transaction_id}
                             onChange={(e) => setData('transaction_id', e.target.value)}
-                            placeholder={isEdit ? 'Enter unique transaction ID' : 'Auto-generated if left blank'}
+                            placeholder="Auto-generated if left blank"
                         />
                         {errors.transaction_id && <p className="text-destructive text-xs">{errors.transaction_id}</p>}
                     </div>
@@ -573,15 +576,6 @@ function BillModal({ open, onClose, title, formData, setData, errors, processing
                         />
                         {errors.note && <p className="text-destructive text-xs">{errors.note}</p>}
                     </div>
-
-                    {isEdit && (
-                        <div className="mt-1 flex gap-2 rounded-md border border-orange-200 bg-orange-50 p-3 dark:border-orange-900 dark:bg-orange-950/20">
-                            <AlertCircle className="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400" />
-                            <p className="text-xs text-orange-700 dark:text-orange-300">
-                                Warning: Editing billing values directly will mark this record as <strong>Admin Modified</strong> for auditing.
-                            </p>
-                        </div>
-                    )}
                 </div>
 
                 <DialogFooter className="mt-2">

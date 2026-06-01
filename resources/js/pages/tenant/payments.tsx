@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, CreditCard, CheckCircle, Clock, XCircle, Info, Sparkles, LoaderCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Plus, CreditCard, CheckCircle, Clock, XCircle, Info, Sparkles, LoaderCircle, Pencil, Trash2 } from 'lucide-react';
 import FlashMessage from '../FlashMessage';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -30,6 +31,8 @@ interface Bill {
     note: string;
     is_admin_modified: boolean;
     created_at: string;
+    // computed search helper (added client-side)
+    _search?: string;
 }
 
 interface Flat {
@@ -69,7 +72,29 @@ const payMethods: Record<string, string> = {
 };
 
 export default function TenantPayments({ bills, flats, currentMonth }: PaymentsProps) {
+    // Build a single _search string per row covering all searchable content,
+    // including every amount format and the ৳ symbol, so SearchableTable's
+    // simple substring match works regardless of how the user types the query.
+    const enrichedBills: Bill[] = bills.map((b) => {
+        const amt = parseFloat(b.amount);
+        const amtVariants = [
+            b.amount,                                                                    // "13500"
+            amt.toFixed(2),                                                              // "13500.00"
+            amt.toLocaleString('en-IN'),                                                 // "13,500"
+            amt.toLocaleString('en-IN', { minimumFractionDigits: 2 }),                   // "13,500.00"
+            `৳${amt.toLocaleString('en-IN')}`,                                           // "৳13,500"
+            `৳${amt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,             // "৳13,500.00"
+        ].join(' ');
+        return {
+            ...b,
+            _search: [b.transaction_id.trim(), amtVariants, b.note ?? ''].join(' '),
+        };
+    });
+
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
 
     const uploadForm = useForm({
         transaction_id: '',
@@ -80,12 +105,67 @@ export default function TenantPayments({ bills, flats, currentMonth }: PaymentsP
         note: '',
     });
 
+    const editForm = useForm({
+        id: 0,
+        transaction_id: '',
+        amount: '',
+        payment_method: 'bkash',
+        bill_type: 'monthly',
+        sent_money_to: 'flat_owner',
+        note: '',
+    });
+
+    const deleteForm = useForm({
+        id: 0,
+    });
+
     const handleUploadSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         uploadForm.post('/tenant/payments/upload', {
             onSuccess: () => {
                 setShowUploadModal(false);
                 uploadForm.reset();
+            },
+        });
+    };
+
+    const handleEditOpen = (bill: Bill) => {
+        setSelectedBill(bill);
+        editForm.setData({
+            id: bill.id,
+            transaction_id: bill.transaction_id,
+            amount: bill.amount,
+            payment_method: bill.payment_method,
+            bill_type: bill.bill_type,
+            sent_money_to: bill.sent_money_to,
+            note: bill.note ?? '',
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        editForm.post('/tenant/payments/edit', {
+            onSuccess: () => {
+                setShowEditModal(false);
+                setSelectedBill(null);
+                editForm.reset();
+            },
+        });
+    };
+
+    const handleDeleteOpen = (bill: Bill) => {
+        setSelectedBill(bill);
+        deleteForm.setData('id', bill.id);
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirm = () => {
+        deleteForm.delete('/tenant/payments/delete', {
+            onSuccess: () => {
+                setShowDeleteModal(false);
+                setSelectedBill(null);
+                deleteForm.reset();
             },
         });
     };
@@ -162,10 +242,176 @@ export default function TenantPayments({ bills, flats, currentMonth }: PaymentsP
             sortable: true,
             sortKey: 'created_at' as keyof Bill,
         },
+        {
+            header: 'Note',
+            accessor: (row: Bill) => (
+                <span className="text-sm text-muted-foreground max-w-[160px] truncate block" title={row.note || undefined}>
+                    {row.note ? row.note : <span className="italic text-muted-foreground/50">—</span>}
+                </span>
+            ),
+        },
+        {
+            header: 'Actions',
+            className: 'text-end',
+            accessor: (row: Bill) => {
+                if (row.status !== 'pending') return <span className="text-xs text-muted-foreground">—</span>;
+                return (
+                    <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs gap-1"
+                            onClick={() => handleEditOpen(row)}
+                        >
+                            <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs gap-1 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/20"
+                            onClick={() => handleDeleteOpen(row)}
+                        >
+                            <Trash2 className="h-3 w-3" />
+                        </Button>
+                    </div>
+                );
+            },
+        },
     ];
 
     // Current month name for formatting
     const currentMonthName = new Date(currentMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    // Shared form fields renderer to avoid duplication
+    type PaymentFormData = { transaction_id: string; amount: string; payment_method: string; bill_type: string; sent_money_to: string; note: string };
+    type AnyPaymentForm = { data: PaymentFormData; errors: Partial<Record<string, string>>; setData(key: keyof PaymentFormData, value: string): void };
+    const renderFormFields = (
+        form: AnyPaymentForm,
+        isEdit = false,
+    ) => (
+        <>
+            <div className="rounded-lg bg-blue-50/50 dark:bg-blue-950/20 p-3.5 border border-blue-200 dark:border-blue-900 text-xs text-blue-800 dark:text-blue-400">
+                <p className="font-semibold flex items-center gap-1">
+                    <Info className="h-3.5 w-3.5" />
+                    Payment logged for: {currentMonthName}
+                </p>
+                <p className="mt-1">Please ensure your Transaction ID is typed exactly as provided by your payment agent.</p>
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor={`${isEdit ? 'edit_' : ''}transaction_id`}>
+                    Transaction ID / Reference <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                    id={`${isEdit ? 'edit_' : ''}transaction_id`}
+                    required
+                    value={form.data.transaction_id}
+                    onChange={(e) => form.setData('transaction_id', e.target.value)}
+                    placeholder="e.g. BK893JS291"
+                />
+                {form.errors.transaction_id && <p className="text-xs text-destructive">{form.errors.transaction_id}</p>}
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor={`${isEdit ? 'edit_' : ''}amount`}>
+                    Amount Paid (BDT) <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                    id={`${isEdit ? 'edit_' : ''}amount`}
+                    type="number"
+                    required
+                    min="1"
+                    value={form.data.amount}
+                    onChange={(e) => form.setData('amount', e.target.value)}
+                    placeholder="e.g. 14500"
+                />
+                {form.errors.amount && <p className="text-xs text-destructive">{form.errors.amount}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor={`${isEdit ? 'edit_' : ''}bill_type`}>
+                        Bill Type <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                        value={form.data.bill_type}
+                        onValueChange={(v) => form.setData('bill_type', v)}
+                    >
+                        <SelectTrigger id={`${isEdit ? 'edit_' : ''}bill_type`}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="monthly">Monthly Rent</SelectItem>
+                            <SelectItem value="electricity">Electricity Bill</SelectItem>
+                            <SelectItem value="water">Water Bill</SelectItem>
+                            <SelectItem value="gas">Gas Bill</SelectItem>
+                            <SelectItem value="wifi">WiFi Bill</SelectItem>
+                            <SelectItem value="dish">Cable Dish</SelectItem>
+                            <SelectItem value="garage">Garage Cost</SelectItem>
+                            <SelectItem value="utility">Utility Charge</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor={`${isEdit ? 'edit_' : ''}payment_method`}>
+                        Payment Method <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                        value={form.data.payment_method}
+                        onValueChange={(v) => form.setData('payment_method', v)}
+                    >
+                        <SelectTrigger id={`${isEdit ? 'edit_' : ''}payment_method`}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="bkash">bKash</SelectItem>
+                            <SelectItem value="nagad">Nagad</SelectItem>
+                            <SelectItem value="rocket">Rocket</SelectItem>
+                            <SelectItem value="card">Card Payment</SelectItem>
+                            <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                            <SelectItem value="cheque">Cheque</SelectItem>
+                            <SelectItem value="cash">Cash Payment</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor={`${isEdit ? 'edit_' : ''}sent_money_to`}>
+                    Recipient <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                    value={form.data.sent_money_to}
+                    onValueChange={(v) => form.setData('sent_money_to', v)}
+                >
+                    <SelectTrigger id={`${isEdit ? 'edit_' : ''}sent_money_to`}>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="flat_owner">Flat Owner</SelectItem>
+                        <SelectItem value="society_lead">Society Lead (Admin)</SelectItem>
+                        <SelectItem value="guard">Building Guard</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor={`${isEdit ? 'edit_' : ''}note`}>Optional Note</Label>
+                <Textarea
+                    id={`${isEdit ? 'edit_' : ''}note`}
+                    rows={2}
+                    value={form.data.note}
+                    onChange={(e) => form.setData('note', e.target.value)}
+                    placeholder="Add billing details or explanations"
+                    className="resize-none"
+                />
+            </div>
+        </>
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -208,7 +454,7 @@ export default function TenantPayments({ bills, flats, currentMonth }: PaymentsP
                                         <div>
                                             <p className="text-muted-foreground flex items-center gap-1">
                                                 Garage Access Fee
-                                                <Info className="h-3 w-3 text-muted-foreground" title="Garage fees are automatically credited to the society treasury." />
+                                                <span title="Garage fees are automatically credited to the society treasury."><Info className="h-3 w-3 text-muted-foreground" /></span>
                                             </p>
                                             <p className="font-bold text-foreground text-sm">Included in utilities/rent</p>
                                         </div>
@@ -233,10 +479,10 @@ export default function TenantPayments({ bills, flats, currentMonth }: PaymentsP
                 <div className="bg-card rounded-xl border p-6 shadow-xs dark:border-neutral-800">
                     <h3 className="font-bold text-lg text-foreground mb-4">Payment Receipts History</h3>
                     <SearchableTable
-                        data={bills}
+                        data={enrichedBills}
                         columns={columns}
-                        searchKeys={['transaction_id', 'amount', 'note']}
-                        searchPlaceholder="Search transactions..."
+                        searchKeys={['_search']}
+                        searchPlaceholder="Search by transaction ID, amount, or note..."
                         rowsPerPage={10}
                     />
                 </div>
@@ -251,126 +497,9 @@ export default function TenantPayments({ bills, flats, currentMonth }: PaymentsP
                             Submit Payment Confirmation
                         </DialogTitle>
                     </DialogHeader>
-                    
+
                     <form onSubmit={handleUploadSubmit} className="space-y-4 py-2">
-                        <div className="rounded-lg bg-blue-50/50 dark:bg-blue-950/20 p-3.5 border border-blue-200 dark:border-blue-900 text-xs text-blue-800 dark:text-blue-400">
-                            <p className="font-semibold flex items-center gap-1">
-                                <Info className="h-3.5 w-3.5" />
-                                Payment logged for: {currentMonthName}
-                            </p>
-                            <p className="mt-1">Please ensure your Transaction ID is typed exactly as provided by your payment agent.</p>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="transaction_id">
-                                Transaction ID / Reference <span className="text-destructive">*</span>
-                            </Label>
-                            <Input
-                                id="transaction_id"
-                                required
-                                value={uploadForm.data.transaction_id}
-                                onChange={(e) => uploadForm.setData('transaction_id', e.target.value)}
-                                placeholder="e.g. BK893JS291"
-                            />
-                            {uploadForm.errors.transaction_id && <p className="text-xs text-destructive">{uploadForm.errors.transaction_id}</p>}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="amount">
-                                Amount Paid (BDT) <span className="text-destructive">*</span>
-                            </Label>
-                            <Input
-                                id="amount"
-                                type="number"
-                                required
-                                min="1"
-                                value={uploadForm.data.amount}
-                                onChange={(e) => uploadForm.setData('amount', e.target.value)}
-                                placeholder="e.g. 14500"
-                            />
-                            {uploadForm.errors.amount && <p className="text-xs text-destructive">{uploadForm.errors.amount}</p>}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="bill_type">
-                                    Bill Type <span className="text-destructive">*</span>
-                                </Label>
-                                <Select
-                                    value={uploadForm.data.bill_type}
-                                    onValueChange={(v) => uploadForm.setData('bill_type', v)}
-                                >
-                                    <SelectTrigger id="bill_type">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="monthly">Monthly Rent</SelectItem>
-                                        <SelectItem value="electricity">Electricity Bill</SelectItem>
-                                        <SelectItem value="water">Water Bill</SelectItem>
-                                        <SelectItem value="gas">Gas Bill</SelectItem>
-                                        <SelectItem value="wifi">WiFi Bill</SelectItem>
-                                        <SelectItem value="dish">Cable Dish</SelectItem>
-                                        <SelectItem value="garage">Garage Cost</SelectItem>
-                                        <SelectItem value="utility">Utility Charge</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="payment_method">
-                                    Payment Method <span className="text-destructive">*</span>
-                                </Label>
-                                <Select
-                                    value={uploadForm.data.payment_method}
-                                    onValueChange={(v) => uploadForm.setData('payment_method', v)}
-                                >
-                                    <SelectTrigger id="payment_method">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="bkash">bKash</SelectItem>
-                                        <SelectItem value="nagad">Nagad</SelectItem>
-                                        <SelectItem value="rocket">Rocket</SelectItem>
-                                        <SelectItem value="card">Card Payment</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                        <SelectItem value="cheque">Cheque</SelectItem>
-                                        <SelectItem value="cash">Cash Payment</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="sent_money_to">
-                                Recipient <span className="text-destructive">*</span>
-                            </Label>
-                            <Select
-                                value={uploadForm.data.sent_money_to}
-                                onValueChange={(v) => uploadForm.setData('sent_money_to', v)}
-                            >
-                                <SelectTrigger id="sent_money_to">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="flat_owner">Flat Owner</SelectItem>
-                                    <SelectItem value="society_lead">Society Lead (Admin)</SelectItem>
-                                    <SelectItem value="guard">Building Guard</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="note">Optional Note</Label>
-                            <Input
-                                id="note"
-                                value={uploadForm.data.note}
-                                onChange={(e) => uploadForm.setData('note', e.target.value)}
-                                placeholder="Add billing details or explanations"
-                            />
-                        </div>
+                        {renderFormFields(uploadForm, false)}
 
                         <DialogFooter className="mt-4 gap-2">
                             <DialogClose asChild>
@@ -382,6 +511,82 @@ export default function TenantPayments({ bills, flats, currentMonth }: PaymentsP
                             </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Payment Modal */}
+            <Dialog open={showEditModal} onOpenChange={(v) => { if (!v) { setShowEditModal(false); setSelectedBill(null); } }}>
+                <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-y-auto dark:border-neutral-800">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-foreground">
+                            <Pencil className="h-5 w-5 text-primary" />
+                            Edit Payment Receipt
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <form onSubmit={handleEditSubmit} className="space-y-4 py-2">
+                        {/* hidden id field handled via editForm.data.id */}
+                        {renderFormFields(editForm, true)}
+
+                        <DialogFooter className="mt-4 gap-2">
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit" disabled={editForm.processing}>
+                                {editForm.processing && <LoaderCircle className="h-4 w-4 animate-spin mr-1.5" />}
+                                Save Changes
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Modal */}
+            <Dialog open={showDeleteModal} onOpenChange={(v) => { if (!v) { setShowDeleteModal(false); setSelectedBill(null); } }}>
+                <DialogContent className="w-full max-w-md dark:border-neutral-800">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-foreground">
+                            <Trash2 className="h-5 w-5 text-destructive" />
+                            Delete Payment Receipt
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py-2 space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            Are you sure you want to delete this payment receipt? This action cannot be undone.
+                        </p>
+                        {selectedBill && (
+                            <div className="rounded-lg border bg-muted/40 p-3 text-sm space-y-1">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Transaction ID</span>
+                                    <span className="font-mono font-semibold">{selectedBill.transaction_id}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Amount</span>
+                                    <span className="font-semibold">৳{parseFloat(selectedBill.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Bill Type</span>
+                                    <span>{billTypes[selectedBill.bill_type] || selectedBill.bill_type}</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={deleteForm.processing}
+                            onClick={handleDeleteConfirm}
+                        >
+                            {deleteForm.processing && <LoaderCircle className="h-4 w-4 animate-spin mr-1.5" />}
+                            Delete Receipt
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </AppLayout>
