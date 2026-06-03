@@ -62,7 +62,7 @@ class BasicPagesController extends Controller
             'monthly_expenditure' => (float)$monthlyExpenditure,
         ];
 
-        return Inertia::render('dashboard', compact('stats', 'recentBills', 'recentSocietyCosts'));
+        return Inertia::render('admin/dashboard', compact('stats', 'recentBills', 'recentSocietyCosts'));
     }
 
 

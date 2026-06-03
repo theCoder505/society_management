@@ -39,6 +39,9 @@ Route::post('/logout', [PortalAuthController::class, 'logout'])->name('portal.lo
 
 // ─── Admin Portal ─────────────────────────────────────────────────────────────
 Route::middleware(['role:admin'])->prefix('/admin')->group(function () {
+    Route::get('/', function () {
+        return redirect('/admin/dashboard');
+    });
     Route::get('/dashboard', [BasicPagesController::class, 'dashboard'])->name('dashboard');
 
     Route::get('/society-settings', [BasicPagesController::class, 'appSettings'])->name('settings.index');
@@ -172,7 +175,7 @@ Route::get('/clear', function () {
     Artisan::call('config:clear');
     Artisan::call('config:cache');
     Artisan::call('view:clear');
-    Artisan::call('route:clear'); 
+    Artisan::call('route:clear');
     Artisan::call('storage:link');
     return "Cleared!";
 });

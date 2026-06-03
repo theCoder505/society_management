@@ -713,7 +713,7 @@ export default function SurfaceHome({ apartments, flats, settings, availableForR
                         <h2 className="mb-2 text-2xl font-bold text-[#1C2B1A] md:text-3xl dark:text-[#E8E4DA]">Access Your Portal</h2>
                         <p className="text-[#7A7A6C] dark:text-[#6A6A60]">Tailored dashboards for every role in the society.</p>
                     </div>
-                    <div className="grid gap-5 sm:grid-cols-3">
+                    <div className="grid gap-5 sm:grid-cols-2">
                         {[
                             {
                                 icon: (
@@ -740,18 +740,7 @@ export default function SurfaceHome({ apartments, flats, settings, availableForR
                                 desc: 'Manage your flats, track income.',
                                 href: '/owner/dashboard',
                                 color: 'bg-[#F0EDE3] dark:bg-[#1A1A14] border-[#C8C5B8] dark:border-[#3A3A2A] text-[#5A5040] dark:text-[#C0BC9A]',
-                            },
-                            {
-                                icon: (
-                                    <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                                    </svg>
-                                ),
-                                title: 'Admin Panel',
-                                desc: 'Full control: users, billing, settings.',
-                                href: '/admin',
-                                color: 'bg-[#EEE8F8] dark:bg-[#1A1525] border-[#C0A8E0] dark:border-[#3A2860] text-[#5A38A8] dark:text-[#C0A8E0]',
-                            },
+                            }
                         ].map((portal) => (
                             <Link
                                 key={portal.href}

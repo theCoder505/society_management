@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle, User, ShieldAlert, KeyRound } from 'lucide-react';
+import { LoaderCircle, User, KeyRound } from 'lucide-react';
 import React, { FormEventHandler, useState, useEffect } from 'react';
 
 import InputError from '@/components/input-error';
@@ -19,11 +19,10 @@ type LoginForm = {
 
 interface LoginProps {
     status?: string;
-    canResetPassword?: boolean;
     defaultRole?: 'tenant' | 'owner';
 }
 
-export default function Login({ status, canResetPassword = true, defaultRole = 'tenant' }: LoginProps) {
+export default function Login({ defaultRole = 'tenant' }: LoginProps) {
     const [role, setRole] = useState<'tenant' | 'owner'>(defaultRole as 'tenant' | 'owner');
 
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({

@@ -67,6 +67,8 @@ interface BillFormData {
     [key: string]: string | number | undefined;
 }
 
+type BillFormValue = string | number | boolean | null | undefined;
+
 const emptyForm = (): BillFormData => ({
     tenant_uid: '',
     amount: '',
@@ -162,6 +164,30 @@ function InlineStatusSelect({ bill }: { bill: TenantBill }) {
                 </SelectItem>
             </SelectContent>
         </Select>
+    );
+}
+
+// ─── Billed At cell renderer ─────────────────────────────────────────────────
+function BilledAtCell({ createdAt }: { createdAt: string }) {
+    if (!createdAt) return <span className="text-muted-foreground italic text-xs">—</span>;
+
+    const date = new Date(createdAt);
+    const formattedDate = date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+    const formattedTime = date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    });
+
+    return (
+        <div>
+            <p className="text-foreground text-sm font-medium">{formattedDate}</p>
+            <p className="text-muted-foreground text-xs">{formattedTime}</p>
+        </div>
     );
 }
 
@@ -281,6 +307,13 @@ export default function TenantBills({ bills, tenants }: Props) {
             sortable: true,
             sortKey: 'status' as keyof TenantBill,
         },
+        // ── Fix: proper Billed At column using BilledAtCell ──────────────────
+        {
+            header: 'Billed At',
+            accessor: (row: TenantBill) => <BilledAtCell createdAt={row.created_at} />,
+            sortable: true,
+            sortKey: 'created_at' as keyof TenantBill,
+        },
         {
             header: 'Actions',
             className: 'max-w-[50px] text-right',
@@ -354,7 +387,7 @@ export default function TenantBills({ bills, tenants }: Props) {
                 }}
                 title="Record Tenant Payment"
                 formData={createForm.data}
-                setData={createForm.setData}
+                setData={(key, value) => createForm.setData(key, value as string)}
                 errors={createForm.errors}
                 processing={createForm.processing}
                 onSubmit={handleCreate}
@@ -393,7 +426,7 @@ interface BillModalProps {
     onClose: () => void;
     title: string;
     formData: BillFormData;
-    setData: (key: keyof BillFormData, value: any) => void;
+    setData: (key: keyof BillFormData, value: BillFormValue) => void;
     errors: Partial<Record<keyof BillFormData, string>>;
     processing: boolean;
     onSubmit: () => void;
