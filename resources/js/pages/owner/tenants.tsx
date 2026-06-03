@@ -220,7 +220,7 @@ export default function Tenants({ tenants, apartments, flats }: Props) {
             if (v instanceof File) fd.append(k, v);
             else if (v !== null && v !== undefined) fd.append(k, v as string);
         });
-        router.post(route('tenants.create'), fd, {
+        router.post(route('owner.tenants.create'), fd, {
             onSuccess: () => {
                 setShowCreateModal(false);
                 createForm.reset();
@@ -265,14 +265,14 @@ export default function Tenants({ tenants, apartments, flats }: Props) {
             if (v instanceof File) fd.append(k, v);
             else if (v !== null && v !== undefined) fd.append(k, v as string);
         });
-        router.post(route('tenants.update'), fd, {
+        router.post(route('owner.tenants.update'), fd, {
             onSuccess: () => setShowEditModal(false),
             forceFormData: true,
         });
     };
 
     const handleDelete = () => {
-        router.delete(route('tenants.delete'), {
+        router.delete(route('owner.tenants.delete'), {
             data: { tenant_uid: selectedTenant?.tenant_uid },
             onSuccess: () => {
                 setShowDeleteDialog(false);

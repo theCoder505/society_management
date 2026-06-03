@@ -213,6 +213,7 @@ export default function TenantNotices({ notices, tenants, owners }: Props) {
         },
         {
             header: 'Actions',
+            className: 'text-end max-w-[100px]',
             accessor: (row: Notice) => (
                 <div className="flex items-center justify-end gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleEditOpen(row)}>

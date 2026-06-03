@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::table('tenants', function (Blueprint $table) {
             $table->json('starting_rent_amount')->nullable()->change();
-            $table->json('current_rent_amount')->nullable()->change();
             $table->unsignedInteger('family_members')->nullable()->change();
             $table->string('image')->nullable()->change();
             $table->string('renting_since')->nullable()->change();
@@ -22,7 +21,6 @@ return new class extends Migration
     {
         Schema::table('tenants', function (Blueprint $table) {
             $table->decimal('starting_rent_amount', 12, 2)->nullable()->change();
-            $table->decimal('current_rent_amount', 12, 2)->nullable()->change();
             $table->decimal('family_members', 12, 2)->nullable()->change();
         });
     }

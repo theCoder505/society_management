@@ -7,6 +7,7 @@ use App\Http\Controllers\TenantsController;
 use App\Http\Controllers\PortalAuthController;
 use App\Http\Controllers\TenantPortalController;
 use App\Http\Controllers\OwnerPortalController;
+use App\Http\Controllers\OwnerTenantController;
 use App\Http\Controllers\SurfaceWebController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -107,11 +108,11 @@ Route::middleware(['role:owner'])->prefix('/owner')->name('owner.')->group(funct
 
     Route::get('/my-apartments', [OwnerPortalController::class, 'myApartments'])->name('my-apartments');
 
-    Route::get('/tenants', [TenantsController::class, 'all_tenants'])->name('owners.tenants.index');
-    Route::post('/tenants/create', [TenantsController::class, 'create_tenant'])->name('owners.tenants.create');
-    Route::get('/tenants/{owner_uid}', [TenantsController::class, 'spec_tenant'])->name('owners.tenants.read');
-    Route::post('/tenants/update', [TenantsController::class, 'update_tenant'])->name('owners.tenants.update');
-    Route::delete('/tenants/delete', [TenantsController::class, 'delete_tenant'])->name('owners.tenants.delete');
+    Route::get('/tenants', [OwnerTenantController::class, 'all_tenants'])->name('tenants.index');
+    Route::post('/tenants/create', [OwnerTenantController::class, 'create_tenant'])->name('tenants.create');
+    Route::get('/tenants/{owner_uid}', [OwnerTenantController::class, 'spec_tenant'])->name('tenants.read');
+    Route::post('/tenants/update', [OwnerTenantController::class, 'update_tenant'])->name('tenants.update');
+    Route::delete('/tenants/delete', [OwnerTenantController::class, 'delete_tenant'])->name('tenants.delete');
 
     Route::get('/tenant-payments', [OwnerPortalController::class, 'tenantPayments'])->name('tenant-payments');
     Route::post('/tenant-payments/verify', [OwnerPortalController::class, 'verifyPayment'])->name('tenant-payments.verify');

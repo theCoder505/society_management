@@ -26,7 +26,6 @@ return new class extends Migration
             $table->string('nid_back');
             $table->string('renting_flats'); // array
             $table->decimal('starting_rent_amount', 12, 2);
-            $table->decimal('current_rent_amount', 12, 2);
             $table->decimal('family_members', 12, 2);
             $table->timestamp('renting_since');
             $table->text('notes');

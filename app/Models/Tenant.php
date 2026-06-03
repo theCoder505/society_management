@@ -23,7 +23,6 @@ class Tenant extends Authenticatable
         'nid_back',
         'renting_flats',           // JSON array: ['FLAT_A1','FLAT_A2']
         'starting_rent_amount',    // JSON object: { FLAT_A1: 8000, FLAT_A2: 9000 }
-        'current_rent_amount',     // JSON object: { FLAT_A1: 8500 }
         'family_members',
         'renting_since',
         'notes',
@@ -38,7 +37,6 @@ class Tenant extends Authenticatable
     protected $casts = [
         'renting_flats'         => 'array',
         'starting_rent_amount'  => 'array',
-        'current_rent_amount'   => 'array',
         'renting_since'         => 'date',
         'password'              => 'hashed',
     ];

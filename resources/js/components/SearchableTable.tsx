@@ -152,12 +152,12 @@ export function SearchableTable<T extends { id?: any; [key: string]: any }>({
             </div>
 
             {totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                    <p className="text-muted-foreground text-sm">
+                <div className="lg:flex items-center justify-center lg:justify-between">
+                    <p className="text-muted-foreground text-sm text-center lg:text-left mb-2 lg:mb-0">
                         Showing {Math.min(processedData.length, (currentPage - 1) * rowsPerPage + 1)} to{' '}
                         {Math.min(processedData.length, currentPage * rowsPerPage)} of {processedData.length} records
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center lg:justify-normal gap-2">
                         <Button
                             variant="outline"
                             size="sm"
