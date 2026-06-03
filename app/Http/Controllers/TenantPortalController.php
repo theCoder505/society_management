@@ -420,14 +420,7 @@ class TenantPortalController extends Controller
         $tenant->otp = $otp;
         $tenant->save();
 
-        Log::info("Tenant Profile Update OTP for {$tenant->email}: {$otp}");
-
-        try {
-            Mail::to($tenant->email)->send(new OtpMail($otp, "Account Security Update Code"));
-        } catch (\Exception $e) {
-            Log::error("Failed to send profile OTP email: " . $e->getMessage());
-        }
-
+        Mail::to($tenant->email)->send(new OtpMail($otp, "Account Security Update Code"));
         return back()->with('success', 'OTP code sent to your email.');
     }
 

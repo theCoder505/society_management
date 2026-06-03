@@ -18,58 +18,65 @@ export default function TermsConditions({ settings }: Props) {
         <SurfaceApp>
             <Head title={`${brand} — Terms & Conditions`} />
 
-            <div className="border-b border-[#E2DFD4] bg-[#FAFAF7] px-4 py-16 dark:border-[#2A2A24] dark:bg-[#0E0E0C]">
+            {/* Hero header */}
+            <div className="bg-[#1C2B1A] dark:bg-[#0E150D] py-16 px-4">
                 <div className="mx-auto max-w-3xl">
-                    <h1 className="text-4xl font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">Terms & Conditions</h1>
+                    <p className="text-emerald-300 text-sm font-semibold tracking-widest uppercase mb-3">Legal</p>
+                    <h1 className="text-4xl font-bold text-white">Terms & Conditions</h1>
+                    <p className="text-emerald-100/70 mt-3 text-lg">Please read these terms carefully before using our services.</p>
                 </div>
             </div>
 
-            <div className="mx-auto max-w-3xl px-4 py-16">
-                {settings?.terms_conditions ? (
-                    <div
-                        className="prose prose-lg dark:prose-invert max-w-none text-[#5A5A50] dark:text-[#9A9A8A]"
-                        dangerouslySetInnerHTML={{ __html: settings.terms_conditions }}
-                    />
-                ) : (
-                    <div className="prose prose-lg dark:prose-invert max-w-none text-[#5A5A50] dark:text-[#9A9A8A]">
-                        <p>
-                            Welcome to {brand}. By accessing and using our website and services, you agree to comply with and be bound by the
-                            following terms and conditions.
-                        </p>
+            <div className="bg-slate-50 dark:bg-[#0E0E0C]">
+                <div className="mx-auto max-w-3xl px-4 py-16">
+                    <div className="bg-white dark:bg-[#141412] rounded-3xl p-8 md:p-12 shadow-sm border border-slate-200 dark:border-[#2A2A24]">
+                        {settings?.terms_conditions ? (
+                            <div
+                                className="prose prose-lg prose-headings:text-slate-900 prose-p:text-slate-600 dark:prose-invert max-w-none dark:prose-headings:text-[#E8E4DA] dark:prose-p:text-[#9A9A8A]"
+                                dangerouslySetInnerHTML={{ __html: settings.terms_conditions }}
+                            />
+                        ) : (
+                            <div className="prose prose-lg dark:prose-invert max-w-none text-slate-600 dark:text-[#9A9A8A]">
+                                <p>
+                                    Welcome to {brand}. By accessing and using our website and services, you agree to comply with and be bound by the
+                                    following terms and conditions.
+                                </p>
 
-                        <h2 className="mt-8 mb-4 text-2xl font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">1. Acceptance of Terms</h2>
-                        <p>
-                            By registering for a tenant or owner account, or simply browsing our surface web, you acknowledge that you have read,
-                            understood, and agree to be bound by these Terms. If you do not agree, please do not use our services.
-                        </p>
+                                <h2 className="mt-8 mb-4 text-2xl font-bold text-slate-900 dark:text-[#E8E4DA]">1. Acceptance of Terms</h2>
+                                <p>
+                                    By registering for a tenant or owner account, or simply browsing our surface web, you acknowledge that you have read,
+                                    understood, and agree to be bound by these Terms. If you do not agree, please do not use our services.
+                                </p>
 
-                        <h2 className="mt-8 mb-4 text-2xl font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">2. User Responsibilities</h2>
-                        <ul className="list-disc space-y-2 pl-6">
-                            <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
-                            <li>You agree to provide accurate and complete information when interacting with our platform.</li>
-                            <li>You must not use the platform for any unlawful or prohibited activities.</li>
-                        </ul>
+                                <h2 className="mt-8 mb-4 text-2xl font-bold text-slate-900 dark:text-[#E8E4DA]">2. User Responsibilities</h2>
+                                <ul className="list-disc space-y-2 pl-6">
+                                    <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+                                    <li>You agree to provide accurate and complete information when interacting with our platform.</li>
+                                    <li>You must not use the platform for any unlawful or prohibited activities.</li>
+                                </ul>
 
-                        <h2 className="mt-8 mb-4 text-2xl font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">3. Payments and Billing</h2>
-                        <p>
-                            All rent payments, maintenance fees, and other charges processed through this platform are subject to verification. Users
-                            must ensure that payment methods are valid and authorized.
-                        </p>
+                                <h2 className="mt-8 mb-4 text-2xl font-bold text-slate-900 dark:text-[#E8E4DA]">3. Payments and Billing</h2>
+                                <p>
+                                    All rent payments, maintenance fees, and other charges processed through this platform are subject to verification. Users
+                                    must ensure that payment methods are valid and authorized.
+                                </p>
 
-                        <h2 className="mt-8 mb-4 text-2xl font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">4. Modifications to Service</h2>
-                        <p>
-                            We reserve the right to modify or discontinue, temporarily or permanently, the service (or any part thereof) with or
-                            without notice. We shall not be liable to you or any third party for any modification, suspension, or discontinuance of
-                            the service.
-                        </p>
+                                <h2 className="mt-8 mb-4 text-2xl font-bold text-slate-900 dark:text-[#E8E4DA]">4. Modifications to Service</h2>
+                                <p>
+                                    We reserve the right to modify or discontinue, temporarily or permanently, the service (or any part thereof) with or
+                                    without notice. We shall not be liable to you or any third party for any modification, suspension, or discontinuance of
+                                    the service.
+                                </p>
 
-                        <h2 className="mt-8 mb-4 text-2xl font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">5. Governing Law</h2>
-                        <p>
-                            These terms and conditions are governed by and construed in accordance with the laws of the jurisdiction in which {brand}{' '}
-                            operates.
-                        </p>
+                                <h2 className="mt-8 mb-4 text-2xl font-bold text-slate-900 dark:text-[#E8E4DA]">5. Governing Law</h2>
+                                <p>
+                                    These terms and conditions are governed by and construed in accordance with the laws of the jurisdiction in which {brand}{' '}
+                                    operates.
+                                </p>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </SurfaceApp>
     );

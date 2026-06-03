@@ -1,3 +1,4 @@
+
 import SurfaceApp from '@/layouts/surface/app';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
@@ -392,68 +393,87 @@ export default function SurfaceHome({ apartments, flats, settings, availableForR
             <Head title={`${settings?.brand_name || 'Society Management'} — Home`} />
 
             {/* ── Hero ───────────────────────────────────────────────────── */}
-            <section className="relative overflow-hidden bg-[#FAFAF7] px-4 py-20 md:py-28 dark:bg-[#0E0E0C]">
-                {/* Decorative grid */}
-                <div
-                    className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
-                    style={{
-                        backgroundImage:
-                            'repeating-linear-gradient(0deg,#1C2B1A,#1C2B1A 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,#1C2B1A,#1C2B1A 1px,transparent 1px,transparent 48px)',
-                    }}
-                />
-
-                {/* Large watermark text */}
-                <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none">
-                    <span className="text-[120px] font-black tracking-tighter whitespace-nowrap text-[#1C2B1A]/[0.03] md:text-[180px] dark:text-white/[0.025]">
-                        SOCIETY
-                    </span>
+            <section className="relative min-h-[85vh] overflow-hidden bg-[#0E0E0C]">
+                {/* Unsplash hero image */}
+                <div className="absolute inset-0">
+                    <img
+                        src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=2400&q=80"
+                        alt="Modern luxury apartment building at twilight"
+                        className="h-full w-full object-cover"
+                    />
+                    {/* Gradient overlays for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a09]/95 via-[#0a0a09]/70 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a09]/80 via-transparent to-[#0a0a09]/30" />
                 </div>
 
-                <div className="relative mx-auto max-w-4xl text-center">
-                    {/* Pill badge */}
-                    <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#B0C8A8] bg-[#EEF4EB] px-4 py-1.5 text-[12px] font-medium text-[#2E5A28] dark:border-[#2E4A2B] dark:bg-[#1A2A18] dark:text-[#A8C09A]">
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                        {availableForRent.length} Flats Available for Rent
-                    </div>
+                {/* Subtle animated dot pattern */}
+                <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px]" />
 
-                    <h1 className="mb-5 text-4xl leading-tight font-bold tracking-tight text-[#1C2B1A] md:text-6xl dark:text-[#E8E4DA]">
-                        Premium Residential
-                        <br />
-                        <span className="text-[#2E5A28] dark:text-[#A8C09A]">Society Management</span>
-                    </h1>
-                    <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-[#5A5A50] dark:text-[#7A7A6A]">
-                        Discover, rent, or manage premium apartments. A modern platform for residents, flat owners, and administrators — all in one
-                        place.
-                    </p>
+                {/* Content */}
+                <div className="relative z-10 mx-auto flex min-h-[85vh] max-w-7xl items-center px-4 py-24 md:px-8">
+                    <div className="max-w-2xl">
+                        {/* Availability badge */}
+                        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-[12px] font-medium text-emerald-400 backdrop-blur-sm">
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                            {availableForRent.length} Flats Available for Rent
+                        </div>
 
-                    <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-                        <Link
-                            href="/apartments"
-                            className="inline-flex items-center gap-2 rounded-xl bg-[#1C2B1A] px-6 py-3 text-sm font-medium text-[#E8E4DA] shadow-sm transition-colors hover:bg-[#263B23] dark:bg-[#2E4A2B] dark:hover:bg-[#3A5E36]"
-                        >
-                            Browse Apartments
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </Link>
-                        <Link
-                            href="/flats"
-                            className="inline-flex items-center gap-2 rounded-xl border border-[#C8C5B8] px-6 py-3 text-sm font-medium text-[#1C2B1A] transition-colors hover:bg-[#EDEAE0] dark:border-[#3A3A34] dark:text-[#E8E4DA] dark:hover:bg-[#1E1E1A]"
-                        >
-                            Flats for Rent
-                        </Link>
-                        <Link
-                            href="/tenant/dashboard"
-                            className="inline-flex items-center gap-2 rounded-xl border border-[#B0C8A8] bg-[#EEF4EB] px-6 py-3 text-sm font-medium text-[#2E5A28] transition-colors hover:bg-[#E2EDD9] dark:border-[#2E4A2B] dark:bg-[#1A2A18] dark:text-[#A8C09A] dark:hover:bg-[#243620]"
-                        >
-                            Tenant Portal →
-                        </Link>
+                        {/* Heading */}
+                        <h1 className="mb-6 text-5xl leading-[1.05] font-bold tracking-tight text-white md:text-6xl lg:text-7xl">
+                            Modern Living,
+                            <br />
+                            <span className="bg-gradient-to-r from-[#A8C09A] to-[#7FB069] bg-clip-text text-transparent">
+                                Elevated.
+                            </span>
+                        </h1>
+
+                        {/* Description */}
+                        <p className="mb-10 max-w-lg text-lg leading-relaxed text-white/60">
+                            Discover, rent, or manage premium apartments. A unified platform for residents, flat owners, and administrators.
+                        </p>
+
+                        {/* CTAs */}
+                        <div className="flex flex-col items-start gap-4 sm:flex-row">
+                            <Link
+                                href="/apartments"
+                                className="group inline-flex items-center gap-2.5 rounded-xl bg-[#2E5A28] px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 transition-all duration-300 hover:bg-[#367030] hover:shadow-emerald-900/50 hover:scale-[1.02]"
+                            >
+                                Browse Apartments
+                                <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                            <Link
+                                href="/tenant/dashboard"
+                                className="inline-flex items-center gap-2 rounded-xl border-2 border-white/20 bg-white/5 px-8 py-4 text-sm font-semibold text-white/90 backdrop-blur-sm transition-all duration-300 hover:border-white/40 hover:bg-white/10"
+                            >
+                                Tenant Portal
+                            </Link>
+                        </div>
+
+                        {/* Quick stats row */}
+                        <div className="mt-16 flex gap-10 border-t border-white/10 pt-8">
+                            <div>
+                                <p className="text-3xl font-bold text-white tabular-nums">{apartments.length}</p>
+                                <p className="mt-1 text-[12px] tracking-wider text-white/40 uppercase">Buildings</p>
+                            </div>
+                            <div>
+                                <p className="text-3xl font-bold text-white tabular-nums">{flats.length}</p>
+                                <p className="mt-1 text-[12px] tracking-wider text-white/40 uppercase">Total Flats</p>
+                            </div>
+                            <div>
+                                <p className="text-3xl font-bold text-[#A8C09A] tabular-nums">{availableForRent.length}</p>
+                                <p className="mt-1 text-[12px] tracking-wider text-white/40 uppercase">For Rent</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                {/* Bottom fade into next section */}
+                <div className="absolute right-0 bottom-0 left-0 h-24 bg-gradient-to-t from-[#0E0E0C] to-transparent" />
             </section>
 
-            {/* ── Stats ──────────────────────────────────────────────────── */}
-            <StatsBar apartments={apartments} flats={flats} availableForRent={availableForRent} />
+
 
             {/* ── Apartments section ─────────────────────────────────────── */}
             <section className="bg-[#F7F6F2] px-4 py-16 dark:bg-[#0A0A09]">

@@ -509,12 +509,7 @@ class OwnerPortalController extends Controller
 
         Log::info("Owner Profile Update OTP for {$owner->email}: {$otp}");
 
-        try {
-            Mail::to($owner->email)->send(new OtpMail($otp, "Account Security Update Code"));
-        } catch (\Exception $e) {
-            Log::error("Failed to send profile OTP email: " . $e->getMessage());
-        }
-
+        Mail::to($owner->email)->send(new OtpMail($otp, "Account Security Update Code"));
         return back()->with('success', 'OTP code sent to your email.');
     }
 

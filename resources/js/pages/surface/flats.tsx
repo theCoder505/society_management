@@ -72,18 +72,18 @@ export default function Flats({ flats, apartments, settings }: Props) {
         <SurfaceApp>
             <Head title={`${settings?.brand_name || 'Society Management'} — Available Flats`} />
             
-            <div className="bg-[#FAFAF7] dark:bg-[#0E0E0C] border-b border-[#E2DFD4] dark:border-[#2A2A24] py-12 px-4">
+            <div className="bg-slate-50 dark:bg-[#0E0E0C] border-b border-slate-200 dark:border-[#2A2A24] py-12 px-4">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-[#1C2B1A] dark:text-[#E8E4DA] mb-2">Find Your Flat</h1>
-                        <p className="text-[#7A7A6C] dark:text-[#6A6A60]">Discover the perfect space for you across our premium locations.</p>
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-[#E8E4DA] mb-2">Find Your Flat</h1>
+                        <p className="text-slate-500 dark:text-[#6A6A60]">Discover the perfect space for you across our premium locations.</p>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-3">
                         <select 
                             value={filter} 
                             onChange={e => setFilter(e.target.value as 'all' | 'rent' | 'sale')}
-                            className="px-4 py-2.5 rounded-lg border border-[#C8C5B8] bg-white text-[#1C2B1A] dark:border-[#3A3A34] dark:bg-[#141412] dark:text-[#E8E4DA] focus:outline-none focus:ring-2 focus:ring-[#B0C8A8]"
+                            className="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 dark:border-[#3A3A34] dark:bg-[#141412] dark:text-[#E8E4DA] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-shadow shadow-sm cursor-pointer"
                         >
                             <option value="all">All Flats</option>
                             <option value="rent">Available for Rent</option>
@@ -92,7 +92,7 @@ export default function Flats({ flats, apartments, settings }: Props) {
                         <select 
                             value={bhkFilter} 
                             onChange={e => setBhkFilter(e.target.value)}
-                            className="px-4 py-2.5 rounded-lg border border-[#C8C5B8] bg-white text-[#1C2B1A] dark:border-[#3A3A34] dark:bg-[#141412] dark:text-[#E8E4DA] focus:outline-none focus:ring-2 focus:ring-[#B0C8A8]"
+                            className="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 dark:border-[#3A3A34] dark:bg-[#141412] dark:text-[#E8E4DA] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-shadow shadow-sm cursor-pointer"
                         >
                             <option value="all">Any BHK</option>
                             {bhkOptions.map(bhk => (
@@ -106,7 +106,7 @@ export default function Flats({ flats, apartments, settings }: Props) {
             <div className="max-w-7xl mx-auto px-4 py-16">
                 {filteredFlats.length === 0 ? (
                     <div className="text-center py-20">
-                        <p className="text-[#7A7A6C] dark:text-[#6A6A60] text-lg">No flats match your filters.</p>
+                        <p className="text-slate-500 dark:text-[#6A6A60] text-lg">No flats match your filters.</p>
                     </div>
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -120,9 +120,9 @@ export default function Flats({ flats, apartments, settings }: Props) {
                                 <Link
                                     key={flat.id}
                                     href={`/flats/${flat.appartment_uid}/${flat.flatID}`}
-                                    className="group block overflow-hidden rounded-2xl border border-[#E2DFD4] bg-white transition-all duration-300 hover:border-[#B0C8A8] hover:shadow-lg dark:border-[#2A2A24] dark:bg-[#141412] dark:hover:border-[#3A5A36] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                                    className="group block overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-900/5 dark:border-[#2A2A24] dark:bg-[#141412] dark:hover:border-[#3A5A36] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                                 >
-                                    <div className="relative h-48 overflow-hidden bg-[#F0EDE3] dark:bg-[#1A1A16]">
+                                    <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-[#1A1A16]">
                                         {image ? (
                                             <img
                                                 src={image}
@@ -131,7 +131,7 @@ export default function Flats({ flats, apartments, settings }: Props) {
                                             />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center">
-                                                <svg className="h-10 w-10 text-[#C8C5B8] dark:text-[#3A3A34]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="h-10 w-10 text-slate-300 dark:text-[#3A3A34]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                                                 </svg>
                                             </div>
@@ -146,29 +146,29 @@ export default function Flats({ flats, apartments, settings }: Props) {
                                                 For Sale
                                             </div>
                                         )}
-                                        <div className="absolute top-3 right-3 rounded-full bg-[#1C2B1A]/80 px-2.5 py-1 font-mono text-[11px] text-[#A8C09A] backdrop-blur-sm">
+                                        <div className="absolute top-3 right-3 rounded-full bg-slate-900/70 px-2.5 py-1 font-mono text-[11px] text-white backdrop-blur-sm dark:bg-[#1C2B1A]/80 dark:text-[#A8C09A]">
                                             {flat.flat_bhk} BHK
                                         </div>
                                     </div>
                                     <div className="p-5">
                                         <div className="flex justify-between items-start mb-3">
                                             <div>
-                                                <h3 className="text-lg font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">{flat.flatID}</h3>
-                                                <p className="text-xs text-[#7A7A6C] dark:text-[#6A6A60]">{aptName}</p>
+                                                <h3 className="text-lg font-bold text-slate-900 dark:text-[#E8E4DA]">{flat.flatID}</h3>
+                                                <p className="text-xs text-slate-500 dark:text-[#6A6A60]">{aptName}</p>
                                             </div>
                                             <div className="text-right">
                                                 {isRent ? (
-                                                    <p className="text-lg font-bold text-[#2E5A28] dark:text-[#A8C09A]">
-                                                        {formatPrice(flat.rent_price)}<span className="text-xs font-normal text-[#7A7A6C]">/mo</span>
+                                                    <p className="text-lg font-bold text-emerald-700 dark:text-[#A8C09A]">
+                                                        {formatPrice(flat.rent_price)}<span className="text-xs font-normal text-slate-500 dark:text-[#7A7A6C]">/mo</span>
                                                     </p>
                                                 ) : (
-                                                    <p className="text-lg font-bold text-[#1C2B1A] dark:text-[#E8E4DA]">
+                                                    <p className="text-lg font-bold text-slate-900 dark:text-[#E8E4DA]">
                                                         {formatPrice(flat.flat_price)}
                                                     </p>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4 text-sm text-[#7A7A6C] dark:text-[#9A9A8A] border-t border-[#F0EDE3] dark:border-[#2A2A24] pt-3">
+                                        <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-[#9A9A8A] border-t border-slate-100 dark:border-[#2A2A24] pt-3">
                                             <span className="flex items-center gap-1.5">
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10M21 5v14M7 7v10M17 5v14M3 12h4M17 12h4M7 12h10" /></svg>
                                                 {flat.tot_bedrooms}

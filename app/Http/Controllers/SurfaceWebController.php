@@ -96,9 +96,8 @@ class SurfaceWebController extends Controller
         ]);
     }
 
-    /**
-     * Submit contact form / joining inquiry.
-     */
+
+
     public function submitInquiry(Request $request)
     {
         $validated = $request->validate([
@@ -112,15 +111,7 @@ class SurfaceWebController extends Controller
 
         $settings = AppSetting::where('id', 1)->first();
         $adminEmail = $settings->contact_email ?? 'lead@societyventure.com';
-
-        Log::info("Surface Inquiry submitted by {$validated['email']}: ", $validated);
-
-        try {
-            Mail::to($adminEmail)->send(new InquiryMail($validated));
-        } catch (\Exception $e) {
-            Log::error("Failed to send inquiry email: " . $e->getMessage());
-        }
-
+        Mail::to($adminEmail)->send(new InquiryMail($validated));
         return back()->with('success', 'Your inquiry has been submitted. The society lead will get in touch with you shortly.');
     }
 }

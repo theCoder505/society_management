@@ -4,12 +4,17 @@ import { PropsWithChildren, useEffect } from 'react';
 
 export default function SurfaceApp({ children }: PropsWithChildren) {
     useEffect(() => {
-        const isDark = localStorage.getItem('theme') === 'dark' ||
-            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        const saved = localStorage.getItem('theme');
+        // Default to dark if no preference is saved
+        const isDark = saved ? saved === 'dark' : true;
         if (isDark) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
+        }
+        // Persist the default so other pages stay consistent
+        if (!saved) {
+            localStorage.setItem('theme', 'dark');
         }
     }, []);
 

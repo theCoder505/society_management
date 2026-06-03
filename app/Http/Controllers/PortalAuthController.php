@@ -85,14 +85,7 @@ class PortalAuthController extends Controller
         $user->otp = $otp;
         $user->save();
 
-        Log::info("Set-Password OTP for {$request->email}: {$otp}");
-
-        try {
-            Mail::to($request->email)->send(new OtpMail($otp, 'Password Setup / Reset Code'));
-        } catch (\Exception $e) {
-            Log::error('OTP email failed: ' . $e->getMessage());
-        }
-
+        Mail::to($request->email)->send(new OtpMail($otp, 'Password Setup / Reset Code'));
         return back()->with('success', 'OTP sent to your email address.');
     }
 
