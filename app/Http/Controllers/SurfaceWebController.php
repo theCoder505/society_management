@@ -22,7 +22,6 @@ class SurfaceWebController extends Controller
         $flats = Flat::all();
         $settings = AppSetting::where('id', 1)->first();
 
-        // Get available flats for rent or sale
         $availableForRent = Flat::where('flat_type', 'to_rent')->get();
         $availableForSale = Flat::whereNull('owner_uid')->get();
 
