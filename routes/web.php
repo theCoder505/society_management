@@ -17,10 +17,13 @@ use Illuminate\Support\Facades\Route;
 
 // ─── Surface Web ──────────────────────────────────────────────────────────────
 Route::get('/', [SurfaceWebController::class, 'home'])->name('home');
+Route::get('/apartments/all', [SurfaceWebController::class, 'apartments'])->name('surface.apartments');
+Route::get('/flats', [SurfaceWebController::class, 'flats'])->name('surface.flats');
+Route::get('/about', [SurfaceWebController::class, 'about'])->name('surface.about');
+Route::get('/privacy-policy', [SurfaceWebController::class, 'privacyPolicy'])->name('surface.privacy');
+Route::get('/terms-conditions', [SurfaceWebController::class, 'termsConditions'])->name('surface.terms');
 Route::get('/contact', [SurfaceWebController::class, 'contact'])->name('contact');
 Route::post('/contact', [SurfaceWebController::class, 'submitInquiry'])->name('contact.submit');
-
-
 
 
 // ─── Multi-Role Auth ──────────────────────────────────────────────────────────

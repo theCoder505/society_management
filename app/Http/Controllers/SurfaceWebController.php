@@ -34,6 +34,52 @@ class SurfaceWebController extends Controller
         ]);
     }
 
+    public function apartments()
+    {
+        $apartments = Appartment::all();
+        $settings = AppSetting::where('id', 1)->first();
+        return Inertia::render('surface/apartments', [
+            'apartments' => $apartments,
+            'settings' => $settings,
+        ]);
+    }
+
+    public function flats()
+    {
+        $flats = Flat::all();
+        $apartments = Appartment::all();
+        $settings = AppSetting::where('id', 1)->first();
+        return Inertia::render('surface/flats', [
+            'flats' => $flats,
+            'apartments' => $apartments,
+            'settings' => $settings,
+        ]);
+    }
+
+    public function about()
+    {
+        $settings = AppSetting::where('id', 1)->first();
+        return Inertia::render('surface/about', [
+            'settings' => $settings,
+        ]);
+    }
+
+    public function privacyPolicy()
+    {
+        $settings = AppSetting::where('id', 1)->first();
+        return Inertia::render('surface/privacy-policy', [
+            'settings' => $settings,
+        ]);
+    }
+
+    public function termsConditions()
+    {
+        $settings = AppSetting::where('id', 1)->first();
+        return Inertia::render('surface/terms-conditions', [
+            'settings' => $settings,
+        ]);
+    }
+
     /**
      * Display the contact page.
      */
